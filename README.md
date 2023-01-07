@@ -1,6 +1,5 @@
 # M.A.D. App (My Awesome Day)
 
-# Test Push
 ## The Problem
 The Problem is either not knowing what to do, wanting to break the norm locally, or find out what is going on in a particular city that you might be visiting.  A problem I see with travel apps is that they are based on advertisement for the establishment.  Social apps are too focused on getting likes and not about how the experience was or how it fit into your day.  
 
