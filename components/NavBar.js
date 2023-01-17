@@ -9,7 +9,7 @@ import {
 import { useRouter } from 'next/router';
 import { useAuth } from '../utils/context/authContext';
 import { signIn, signOut } from '../utils/auth';
-import { getUser } from '../api/user/userData';
+import { checkUser } from '../api/user/userData';
 
 const NavBar = () => {
   const router = useRouter();
@@ -17,9 +17,10 @@ const NavBar = () => {
   const expand = false;
 
   const checkUserProfile = () => {
+    console.warn(user);
     if (user.uid) {
-      getUser(user.uid).then((userObj) => {
-        if (!Object.values(userObj).length) {
+      checkUser(user.uid).then((userObj) => {
+        if (!userObj.valid) {
           router.push('/user/new');
         }
       });

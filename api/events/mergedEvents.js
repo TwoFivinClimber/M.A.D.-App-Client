@@ -4,6 +4,9 @@ import { getSingleUserByUid } from '../user/userData';
 import {
   deleteSingleEvent, getEventsByDay, getEventsByUid, getPublicEvents, getSingleEvent, updateEvent,
 } from './eventData';
+import { clientCredentials } from '../../utils/client';
+
+const dbUrl = clientCredentials.databaseURL;
 
 const handleDayEvents = (dayFirebaseKey, eventsFbkArr) => new Promise((resolve, reject) => {
   const updateEvents = eventsFbkArr.map((firebaseKey) => updateEvent({ firebaseKey, eventOfDay: dayFirebaseKey }));
@@ -68,13 +71,10 @@ const getPublicContentByUser = (uid) => new Promise((resolve, reject) => {
 });
 
 const getRandomPublicEvent = () => new Promise((resolve, reject) => {
-  getPublicEvents().then((eventsArr) => {
-    const index = Math.floor(Math.random() * eventsArr.length);
-    const event = eventsArr[index];
-    getSingleUserByUid(event.uid).then((evUser) => {
-      resolve({ ...event, evUser });
-    });
-  }).catch(reject);
+  fetch(`${dbUrl}/events?featured=True`)
+    .then((response) => response.json())
+    .then(resolve)
+    .catch(reject);
 });
 
 // eslint-disable-next-line import/prefer-default-export

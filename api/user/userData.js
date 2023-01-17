@@ -4,6 +4,21 @@ import { clientCredentials } from '../../utils/client';
 const dbUrl = clientCredentials.databaseURL;
 
 // FOR CHECKING IF USER HAS PROFILE //
+const checkUser = (uid) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/checkuser`, {
+    method: 'POST',
+    body: JSON.stringify({
+      uid,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+  })
+    .then((response) => resolve(response.json()))
+    .catch(reject);
+});
+
 const getUser = (uid) => new Promise((resolve, reject) => {
   axios.get(`${dbUrl}/users.json?orderBy="uid"&equalTo="${uid}"`)
     .then((user) => resolve(Object.values(user.data)))
@@ -47,5 +62,5 @@ const deleteThisUser = (firebaseKey) => new Promise((resolve, reject) => {
 });
 
 export {
-  getUser, updateUser, createUser, getUserByFbKey, deleteThisUser, getSingleUserByUid,
+  getUser, updateUser, createUser, getUserByFbKey, deleteThisUser, getSingleUserByUid, checkUser,
 };

@@ -6,19 +6,15 @@ import { Form } from 'react-bootstrap';
 import { useRouter } from 'next/router';
 import { getRandomPublicEvent } from '../api/events/mergedEvents';
 import EventCardNew from '../components/EventCardNew';
-import { getRandomPublicDay } from '../api/day/mergedDayData';
-import DayCardNew from '../components/DayCardNew';
 
 function Home() {
   // const { user } = useAuth();
   const router = useRouter();
   const [searchInput, setSearchInput] = useState('');
   const [featuredEvent, setFeaturedEvent] = useState({});
-  const [featuredDay, setFeaturedDay] = useState({});
 
   const getFeatured = () => {
     getRandomPublicEvent().then(setFeaturedEvent);
-    getRandomPublicDay().then(setFeaturedDay);
   };
 
   const handleChange = (e) => {
@@ -62,7 +58,6 @@ function Home() {
         <h3 className="featured-head"> Featured </h3>
         <div className="featured-Content-Div">
           <EventCardNew key={featuredEvent.firebaseKey} obj={featuredEvent} onUpdate={getFeatured} />
-          <DayCardNew key={featuredDay.firebaseKey} obj={featuredDay} onUpdate={getFeatured} />
         </div>
       </div>
     </div>
