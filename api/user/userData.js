@@ -15,7 +15,13 @@ const checkUser = (uid) => new Promise((resolve, reject) => {
       Accept: 'application/json',
     },
   })
-    .then((response) => resolve(response.json()))
+    .then((response) => {
+      if (response.status === 500) {
+        resolve({ valid: false });
+      } else {
+        resolve(response.json());
+      }
+    })
     .catch(reject);
 });
 

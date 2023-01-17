@@ -17,10 +17,9 @@ const NavBar = () => {
   const expand = false;
 
   const checkUserProfile = () => {
-    console.warn(user);
     if (user.uid) {
       checkUser(user.uid).then((userObj) => {
-        if (!userObj.valid) {
+        if (!userObj.id) {
           router.push('/user/new');
         }
       });
