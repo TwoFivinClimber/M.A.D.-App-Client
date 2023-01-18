@@ -25,18 +25,11 @@ const checkUser = (uid) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-const getUser = (uid) => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/users.json?orderBy="uid"&equalTo="${uid}"`)
-    .then((user) => resolve(Object.values(user.data)))
+const getUser = (id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/users/${id}`)
+    .then((response) => response.json())
+    .then(resolve)
     .catch(reject);
-});
-
-const getSingleUserByUid = (uid) => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/users.json?orderBy="uid"&equalTo="${uid}"`)
-    .then((userArr) => {
-      const userValuesArr = Object.values(userArr.data);
-      resolve(userValuesArr[0]);
-    }).catch(reject);
 });
 
 const getUserByFbKey = (firebaseKey) => new Promise((resolve, reject) => {
@@ -68,5 +61,5 @@ const deleteThisUser = (firebaseKey) => new Promise((resolve, reject) => {
 });
 
 export {
-  getUser, updateUser, createUser, getUserByFbKey, deleteThisUser, getSingleUserByUid, checkUser,
+  getUser, updateUser, createUser, getUserByFbKey, deleteThisUser, checkUser,
 };

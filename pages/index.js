@@ -11,10 +11,10 @@ function Home() {
   // const { user } = useAuth();
   const router = useRouter();
   const [searchInput, setSearchInput] = useState('');
-  const [featuredEvent, setFeaturedEvent] = useState({});
+  const [featuredEvents, setFeaturedEvents] = useState([]);
 
   const getFeatured = () => {
-    getRandomPublicEvent().then(setFeaturedEvent);
+    getRandomPublicEvent().then(setFeaturedEvents);
   };
 
   const handleChange = (e) => {
@@ -57,7 +57,9 @@ function Home() {
       <div className="main-Featured-Div">
         <h3 className="featured-head"> Featured </h3>
         <div className="featured-Content-Div">
-          <EventCardNew key={featuredEvent.firebaseKey} obj={featuredEvent} onUpdate={getFeatured} />
+          {featuredEvents.map((event) => (
+            <EventCardNew key={event.id} obj={event} onUpdate={getFeatured} />
+          ))}
         </div>
       </div>
     </div>

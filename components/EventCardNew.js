@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Card, Image, Dropdown, DropdownButton,
 } from 'react-bootstrap';
@@ -10,36 +10,34 @@ import { FaEllipsisV } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Carousel from 'react-bootstrap/Carousel';
-import { getImagesByEvent } from '../api/images/imageData';
 import { deleteEvent } from '../api/events/mergedEvents';
 import { useAuth } from '../utils/context/authContext';
-import { getSingleUserByUid } from '../api/user/userData';
 
 const EventCardNew = ({ obj, onUpdate }) => {
-  const [images, setImages] = useState([]);
-  const [eventUser, setEventUser] = useState({});
+  // const [images, setImages] = useState([]);
+  // const [eventUser, setEventUser] = useState({});
   const router = useRouter();
   const { user } = useAuth();
   const [index, setIndex] = useState(0);
 
-  const getTheContent = () => {
-    getSingleUserByUid(obj.uid).then((evUser) => {
-      setEventUser(evUser);
-    });
-    getImagesByEvent(obj.firebaseKey).then(setImages);
-  };
+  // const getTheContent = () => {
+  //   getSingleUserByUid(obj.uid).then((evUser) => {
+  //     setEventUser(evUser);
+  //   });
+  //   getImagesByEvent(obj.firebaseKey).then(setImages);
+  // };
 
   const deleteThisEvent = () => {
     if (window.confirm('Are You Sure ?')) {
-      deleteEvent(obj.firebaseKey).then(() => {
+      deleteEvent(obj.id).then(() => {
         onUpdate();
       });
     }
   };
 
-  useEffect(() => {
-    getTheContent();
-  }, [obj]);
+  // useEffect(() => {
+  //   getTheContent();
+  // }, [obj]);
 
   const handleImageRotation = (selected) => {
     setIndex(selected);
@@ -49,22 +47,22 @@ const EventCardNew = ({ obj, onUpdate }) => {
     <Card className="event-card">
       <div className="event-card-header">
         <div className="event-card-user">
-          {eventUser?.uid === user.uid ? (
+          {obj.uid.id === user.uid ? (
             <Link href="/user/profile" passHref>
-              <Image className="comment-User-Image" src={eventUser?.imageUrl} />
+              <Image className="comment-User-Image" src={obj.uid.image} />
             </Link>
           ) : (
-            <Link href={`/user/${eventUser?.uid}`} passHref>
-              <Image className="comment-User-Image" src={eventUser?.imageUrl} />
+            <Link href={`/user/${obj.uid.id}`} passHref>
+              <Image className="comment-User-Image" src={obj.uid.image} />
             </Link>
           )}
-          <Card.Text className="event-card-username">{eventUser?.userName}</Card.Text>
+          <Card.Text className="event-card-username">{obj.uid.name}</Card.Text>
         </div>
         <DropdownButton align="end" variant="secondary" className="event-card-dropdown" title={<FaEllipsisV />}>
-          <Dropdown.Item className="drop-Down-Item" onClick={() => router.push(`/event/${obj.firebaseKey}`)}>View</Dropdown.Item>
+          <Dropdown.Item className="drop-Down-Item" onClick={() => router.push(`/event/${obj.id}`)}>View</Dropdown.Item>
           {user.uid === obj.uid ? (
             <>
-              <Dropdown.Item className="drop-Down-Item" onClick={() => router.push(`/event/edit/${obj.firebaseKey}`)}>Edit</Dropdown.Item>
+              <Dropdown.Item className="drop-Down-Item" onClick={() => router.push(`/event/edit/${obj.id}`)}>Edit</Dropdown.Item>
               <Dropdown.Divider />
               <Dropdown.Item className="drop-Down-Item" onClick={deleteThisEvent}>Delete</Dropdown.Item>
             </>
@@ -73,11 +71,11 @@ const EventCardNew = ({ obj, onUpdate }) => {
       </div>
       <div className="event-card-carousel">
         <Carousel activeIndex={index} onSelect={handleImageRotation} interval={null}>
-          {images.map((image) => (
-            <Carousel.Item key={image.firebaseKey}>
+          {obj.photos.map((photo) => (
+            <Carousel.Item key={photo.id}>
               <img
                 className="event-card-image d-block w-100"
-                src={image.imageUrl}
+                src={photo.url}
                 alt="user posted content"
               />
             </Carousel.Item>
@@ -87,9 +85,7 @@ const EventCardNew = ({ obj, onUpdate }) => {
       <Card.Body className="event-card-body">
         <div className="event-card-title">
           <Card.Title className="event-card-title">{obj.title}</Card.Title>
-          {router.asPath === `/day/${obj.eventOfDay}` ? (
-            <div className="event-card-time-of-day">{obj.timeOfDay}</div>
-          ) : ('')}
+          {/* <Card className="event-card-time-of-day">{obj.timeOfDay}</Card> */}
         </div>
         <div className="event-card-location">
           <Card.Text>{obj.location}</Card.Text>
@@ -107,7 +103,7 @@ const EventCardNew = ({ obj, onUpdate }) => {
             tooltipStyle={{
               height: 'auto', width: 'auto', fontSize: '10px', padding: '2px 4px', textAlign: 'center', marginTop: '4px', marginLeft: '10px',
             }}
-            ratingValue={obj.starRating}
+            ratingValue={obj.rating}
             size={20}
             readonly
           />
@@ -119,19 +115,28 @@ const EventCardNew = ({ obj, onUpdate }) => {
 
 EventCardNew.propTypes = {
   obj: PropTypes.shape({
+    id: PropTypes.number,
     title: PropTypes.string,
     date: PropTypes.string,
-    timeOfDay: PropTypes.string,
-    category: PropTypes.string,
+    category: PropTypes.shape({
+      id: PropTypes.number,
+      name: PropTypes.string,
+    }),
     location: PropTypes.string,
     city: PropTypes.string,
     description: PropTypes.string,
-    starRating: PropTypes.number,
-    isPublic: PropTypes.bool,
-    uid: PropTypes.string,
-    firebaseKey: PropTypes.string,
-    userName: PropTypes.string,
-    eventOfDay: PropTypes.string,
+    rating: PropTypes.number,
+    public: PropTypes.bool,
+    uid: PropTypes.shape({
+      id: PropTypes.number,
+      name: PropTypes.string,
+      image: PropTypes.string,
+    }),
+    photos: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string,
+      }),
+    ),
   }).isRequired,
   onUpdate: PropTypes.func.isRequired,
 };
