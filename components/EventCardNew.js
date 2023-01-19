@@ -71,7 +71,7 @@ const EventCardNew = ({ obj, onUpdate }) => {
       </div>
       <div className="event-card-carousel">
         <Carousel activeIndex={index} onSelect={handleImageRotation} interval={null}>
-          {obj.photos.map((photo) => (
+          {obj.photos?.map((photo) => (
             <Carousel.Item key={photo.id}>
               <img
                 className="event-card-image d-block w-100"

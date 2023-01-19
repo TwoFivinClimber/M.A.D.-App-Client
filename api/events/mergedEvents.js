@@ -1,8 +1,7 @@
 import { getDaysbyUid, getPublicDays } from '../day/dayData';
 import { deleteImage, getImagesByEvent } from '../images/imageData';
-import { getSingleUserByUid } from '../user/userData';
 import {
-  deleteSingleEvent, getEventsByDay, getEventsByUid, getPublicEvents, getSingleEvent, updateEvent,
+  deleteSingleEvent, getEventsByDay, getEventsByUid, getPublicEvents, updateEvent,
 } from './eventData';
 import { clientCredentials } from '../../utils/client';
 
@@ -39,15 +38,15 @@ const getEventsAndDays = () => new Promise((resolve, reject) => {
   });
 });
 
-const getEventPackage = (firebaseKey) => new Promise((resolve, reject) => {
-  getSingleEvent(firebaseKey).then((eventObj) => {
-    getImagesByEvent(firebaseKey).then((imagesArr) => {
-      getSingleUserByUid(eventObj.uid).then((userObj) => {
-        resolve({ ...eventObj, images: imagesArr, eventUser: userObj });
-      });
-    });
-  }).catch(reject);
-});
+// const getEventPackage = (firebaseKey) => new Promise((resolve, reject) => {
+//   getSingleEvent(firebaseKey).then((eventObj) => {
+//     getImagesByEvent(firebaseKey).then((imagesArr) => {
+//       getSingleUserByUid(eventObj.uid).then((userObj) => {
+//         resolve({ ...eventObj, images: imagesArr, eventUser: userObj });
+//       });
+//     });
+//   }).catch(reject);
+// });
 
 const getEventCities = () => new Promise((resolve, reject) => {
   getPublicEvents().then((eventsArray) => {
@@ -56,6 +55,7 @@ const getEventCities = () => new Promise((resolve, reject) => {
       value: event.city,
       label: event.city,
     }));
+    console.warn(returnArray);
     resolve(returnArray);
   }).catch(reject);
 });
@@ -79,5 +79,5 @@ const getRandomPublicEvent = () => new Promise((resolve, reject) => {
 
 // eslint-disable-next-line import/prefer-default-export
 export {
-  handleDayEvents, deleteEvent, getEventsAndDays, getEventCities, getPublicContentByUser, getRandomPublicEvent, getEventPackage,
+  handleDayEvents, deleteEvent, getEventsAndDays, getEventCities, getPublicContentByUser, getRandomPublicEvent,
 };

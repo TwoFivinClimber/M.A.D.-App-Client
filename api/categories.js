@@ -10,13 +10,13 @@ const getCategories = () => new Promise((resolve, reject) => {
 });
 
 const getCategorySelect = () => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/categories.json`)
+  fetch(`${dbUrl}/categories`)
+    .then((categories) => categories.json())
     .then((categories) => {
-      const categoryArray = Object.values(categories.data);
-      const returnArray = categoryArray.map((cat) => ({
+      const returnArray = categories.map((cat) => ({
         name: 'category',
-        label: cat.category,
-        value: cat.category,
+        label: cat.label,
+        value: cat.label,
       }));
       resolve(returnArray);
     }).catch(reject);

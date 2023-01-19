@@ -74,11 +74,6 @@ const NavBar = () => {
                     <span>Browse Events</span>
                   </Link>
                 </Navbar.Toggle>
-                <Link href="/browseDays" passHref>
-                  <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`}>
-                    <span>Browse Days</span>
-                  </Navbar.Toggle>
-                </Link>
                 <Link href="/search" passHref>
                   <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`}>
                     <span>Search</span>
@@ -90,14 +85,6 @@ const NavBar = () => {
                       <Link href="/event/new" passHref>
                         <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`}>
                           <span>Create Event</span>
-                        </Navbar.Toggle>
-                      </Link>
-                    ) : <></> }
-                  {user
-                    ? (
-                      <Link href="/day/new" passHref>
-                        <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`}>
-                          <span>Create Day</span>
                         </Navbar.Toggle>
                       </Link>
                     ) : <></> }
