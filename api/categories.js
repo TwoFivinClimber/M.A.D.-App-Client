@@ -1,11 +1,11 @@
-import axios from 'axios';
 import { clientCredentials } from '../utils/client';
 
 const dbUrl = clientCredentials.databaseURL;
 
 const getCategories = () => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/categories.json`)
-    .then((categories) => resolve(Object.values(categories.data)))
+  fetch(`${dbUrl}/categories`)
+    .then((response) => response.json())
+    .then(resolve)
     .catch(reject);
 });
 

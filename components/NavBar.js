@@ -17,15 +17,15 @@ const NavBar = () => {
   const expand = false;
 
   const checkUserProfile = () => {
-    if (user.uid) {
-      checkUser(user.uid).then((userObj) => {
-        console.warn(user);
-        if (!userObj.id) {
+    if (user) {
+      checkUser(user.fbUser?.uid).then((response) => {
+        if (!response.id) {
           router.push('/user/new');
         }
       });
     }
   };
+
   const signOutUser = () => {
     router.push('/');
     signOut();
