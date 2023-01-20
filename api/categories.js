@@ -1,22 +1,22 @@
-import axios from 'axios';
 import { clientCredentials } from '../utils/client';
 
 const dbUrl = clientCredentials.databaseURL;
 
 const getCategories = () => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/categories.json`)
-    .then((categories) => resolve(Object.values(categories.data)))
+  fetch(`${dbUrl}/categories`)
+    .then((response) => response.json())
+    .then(resolve)
     .catch(reject);
 });
 
 const getCategorySelect = () => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/categories.json`)
+  fetch(`${dbUrl}/categories`)
+    .then((categories) => categories.json())
     .then((categories) => {
-      const categoryArray = Object.values(categories.data);
-      const returnArray = categoryArray.map((cat) => ({
+      const returnArray = categories.map((cat) => ({
         name: 'category',
-        label: cat.category,
-        value: cat.category,
+        label: cat.label,
+        value: cat.label,
       }));
       resolve(returnArray);
     }).catch(reject);

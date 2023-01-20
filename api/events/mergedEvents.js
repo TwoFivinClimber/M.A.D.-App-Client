@@ -1,9 +1,11 @@
 import { getDaysbyUid, getPublicDays } from '../day/dayData';
 import { deleteImage, getImagesByEvent } from '../images/imageData';
-import { getSingleUserByUid } from '../user/userData';
 import {
-  deleteSingleEvent, getEventsByDay, getEventsByUid, getPublicEvents, getSingleEvent, updateEvent,
+  deleteSingleEvent, getEventsByDay, getEventsByUid, getPublicEvents, updateEvent,
 } from './eventData';
+import { clientCredentials } from '../../utils/client';
+
+const dbUrl = clientCredentials.databaseURL;
 
 const handleDayEvents = (dayFirebaseKey, eventsFbkArr) => new Promise((resolve, reject) => {
   const updateEvents = eventsFbkArr.map((firebaseKey) => updateEvent({ firebaseKey, eventOfDay: dayFirebaseKey }));
@@ -36,15 +38,15 @@ const getEventsAndDays = () => new Promise((resolve, reject) => {
   });
 });
 
-const getEventPackage = (firebaseKey) => new Promise((resolve, reject) => {
-  getSingleEvent(firebaseKey).then((eventObj) => {
-    getImagesByEvent(firebaseKey).then((imagesArr) => {
-      getSingleUserByUid(eventObj.uid).then((userObj) => {
-        resolve({ ...eventObj, images: imagesArr, eventUser: userObj });
-      });
-    });
-  }).catch(reject);
-});
+// const getEventPackage = (firebaseKey) => new Promise((resolve, reject) => {
+//   getSingleEvent(firebaseKey).then((eventObj) => {
+//     getImagesByEvent(firebaseKey).then((imagesArr) => {
+//       getSingleUserByUid(eventObj.uid).then((userObj) => {
+//         resolve({ ...eventObj, images: imagesArr, eventUser: userObj });
+//       });
+//     });
+//   }).catch(reject);
+// });
 
 const getEventCities = () => new Promise((resolve, reject) => {
   getPublicEvents().then((eventsArray) => {
@@ -53,6 +55,7 @@ const getEventCities = () => new Promise((resolve, reject) => {
       value: event.city,
       label: event.city,
     }));
+    console.warn(returnArray);
     resolve(returnArray);
   }).catch(reject);
 });
@@ -68,16 +71,13 @@ const getPublicContentByUser = (uid) => new Promise((resolve, reject) => {
 });
 
 const getRandomPublicEvent = () => new Promise((resolve, reject) => {
-  getPublicEvents().then((eventsArr) => {
-    const index = Math.floor(Math.random() * eventsArr.length);
-    const event = eventsArr[index];
-    getSingleUserByUid(event.uid).then((evUser) => {
-      resolve({ ...event, evUser });
-    });
-  }).catch(reject);
+  fetch(`${dbUrl}/events?featured=True`)
+    .then((response) => response.json())
+    .then(resolve)
+    .catch(reject);
 });
 
 // eslint-disable-next-line import/prefer-default-export
 export {
-  handleDayEvents, deleteEvent, getEventsAndDays, getEventCities, getPublicContentByUser, getRandomPublicEvent, getEventPackage,
+  handleDayEvents, deleteEvent, getEventsAndDays, getEventCities, getPublicContentByUser, getRandomPublicEvent,
 };

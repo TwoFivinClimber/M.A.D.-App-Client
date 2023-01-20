@@ -4,18 +4,27 @@ import { clientCredentials } from '../../utils/client';
 const dbUrl = clientCredentials.databaseURL;
 
 // FOR CHECKING IF USER HAS PROFILE //
-const getUser = (uid) => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/users.json?orderBy="uid"&equalTo="${uid}"`)
-    .then((user) => resolve(Object.values(user.data)))
+const checkUser = (uid) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/checkuser`, {
+    method: 'POST',
+    body: JSON.stringify({
+      uid,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then(resolve)
     .catch(reject);
 });
 
-const getSingleUserByUid = (uid) => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/users.json?orderBy="uid"&equalTo="${uid}"`)
-    .then((userArr) => {
-      const userValuesArr = Object.values(userArr.data);
-      resolve(userValuesArr[0]);
-    }).catch(reject);
+const getUser = (id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/users/${id}`)
+    .then((response) => response.json())
+    .then(resolve)
+    .catch(reject);
 });
 
 const getUserByFbKey = (firebaseKey) => new Promise((resolve, reject) => {
@@ -40,12 +49,12 @@ const createUser = (userObj) => new Promise((resolve, reject) => {
     });
 });
 
-const deleteThisUser = (firebaseKey) => new Promise((resolve, reject) => {
+const deleteUser = (firebaseKey) => new Promise((resolve, reject) => {
   axios.delete(`${dbUrl}/users/${firebaseKey}.json`)
     .then(resolve)
     .catch(reject);
 });
 
 export {
-  getUser, updateUser, createUser, getUserByFbKey, deleteThisUser, getSingleUserByUid,
+  getUser, updateUser, createUser, getUserByFbKey, deleteUser, checkUser,
 };

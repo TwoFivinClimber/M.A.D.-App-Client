@@ -27,7 +27,7 @@ function Search() {
   };
 
   const categoryFilter = (array) => {
-    const categoryResults = array.filter((event) => event.category.toLowerCase() === category.toLowerCase());
+    const categoryResults = array.filter((event) => event.category.name.toLowerCase() === category.toLowerCase());
     return categoryResults;
   };
 

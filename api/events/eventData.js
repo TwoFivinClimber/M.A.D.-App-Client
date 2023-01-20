@@ -10,8 +10,9 @@ const getEvents = () => new Promise((resolve, reject) => {
 });
 
 const getPublicEvents = () => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/events.json?orderBy="isPublic"&equalTo=true`)
-    .then((eventArray) => resolve(Object.values(eventArray.data)))
+  fetch(`${dbUrl}/events?Public=True`)
+    .then((response) => response.json())
+    .then(resolve)
     .catch(reject);
 });
 
@@ -22,8 +23,9 @@ const getSingleEvent = (firebaseKey) => new Promise((resolve, reject) => {
 });
 
 const getEventsByUid = (uid) => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/events.json?orderBy="uid"&equalTo="${uid}"`)
-    .then((eventsArr) => resolve(Object.values(eventsArr.data)))
+  fetch(`${dbUrl}/events?user=${uid}`)
+    .then((response) => response.json())
+    .then(resolve)
     .catch(reject);
 });
 

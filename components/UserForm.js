@@ -4,6 +4,7 @@ import { Form, Button, Image } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import AsyncCreatable from 'react-select/async-creatable';
+import AsyncSelect from 'react-select/async';
 import { getCategories } from '../api/categories';
 import { useAuth } from '../utils/context/authContext';
 import { createUser, updateUser } from '../api/user/userData';
@@ -11,25 +12,22 @@ import { getCity } from '../api/tom-tom';
 import uploadPhoto from '../api/cloudinary';
 
 const initialState = {
+  id: 0,
   uid: '',
-  userName: '',
-  imageUrl: '',
-  tagLine: '',
-  homeCity: '',
+  name: '',
+  image: '',
+  tag: '',
+  location: '',
   lat: 0,
   long: 0,
   age: '',
-  interestOne: '',
-  interestTwo: '',
-  interestThree: '',
+  interests: [],
 };
 
 function UserForm({ obj }) {
   const router = useRouter();
   const { user } = useAuth();
-  const [categories, setCategories] = useState([]);
   const [input, setInput] = useState(initialState);
-  // const [image, setImage] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,9 +35,10 @@ function UserForm({ obj }) {
       ...prevState,
       [name]: value,
     }));
+    console.warn(input);
   };
 
-  const handleSelect = (selected) => {
+  const handleLocationSelect = (selected) => {
     if (selected) {
       const {
         name, value, lat, long,
@@ -58,9 +57,16 @@ function UserForm({ obj }) {
     }
   };
 
+  const handleInterestSelect = (selected) => {
+    setInput((prevState) => ({
+      ...prevState,
+      interests: selected,
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (obj.firebaseKey) {
+    if (obj.id) {
       updateUser(input).then(() => router.push('/user/profile'));
     } else {
       createUser(input).then(() => router.push('/user/profile'));
@@ -91,24 +97,38 @@ function UserForm({ obj }) {
   };
 
   useEffect(() => {
-    getCategories().then(setCategories);
-    if (obj.firebaseKey) {
-      setInput(obj);
+    if (obj.id) {
+      const userInterests = obj.interests.map((int) => (
+        {
+          value: int.category.id,
+          label: int.category.name,
+        }
+      ));
+      setInput({
+        name: obj.name,
+        image: obj.image,
+        tag: obj.tag,
+        location: obj.location,
+        lat: obj.lat,
+        long: obj.long,
+        age: obj.age,
+        interests: userInterests,
+      });
     } else {
       setInput((prevState) => ({
         ...prevState,
-        uid: user.uid,
-        userName: user.displayName,
-        imageUrl: user.photoURL,
+        uid: user.fbUser.uid,
+        name: user.fbUser.displayName,
+        image: user.fbUser.photoURL,
       }));
     }
   }, [obj]);
 
   return (
     <>
-      <h4 className="user-form-header">{obj.firebaseKey ? 'Edit' : 'Create'} Your Profile</h4>
+      <h4 className="user-form-header">{obj.id ? 'Edit' : 'Create'} Your Profile</h4>
       <div className="user-form-image-div">
-        <Image variant="start" className="user-form-image" thumbnail roundedCircle src={input.imageUrl} />
+        <Image variant="start" className="user-form-image" thumbnail roundedCircle src={input.image} />
         <div className="user-form-upload">
           <Form.Label>Upload Photo</Form.Label>
           <Form.Control type="file" onChange={uploadImage} />
@@ -116,42 +136,29 @@ function UserForm({ obj }) {
       </div>
       <Form className="user-form" onSubmit={handleSubmit}>
         <Form.Label>Profile Name</Form.Label>
-        <Form.Control name="userName" value={input.userName} onChange={handleChange} type="text" placeholder="Enter Profile Name" required />
+        <Form.Control name="userName" value={input.name} onChange={handleChange} type="text" placeholder="Enter Profile Name" required />
         <Form.Label>Tag Line</Form.Label>
-        <Form.Control name="tagLine" value={input.tagLine} onChange={handleChange} type="text" placeholder="Just Tryna Be Awesome" required />
+        <Form.Control name="tagLine" value={input.tag} onChange={handleChange} type="text" placeholder="Just Tryna Be Awesome" required />
         <Form.Label>Location </Form.Label>
         <AsyncCreatable
           classNamePrefix="select"
           backspaceRemovesValue
           isClearable
-          onChange={handleSelect}
-          value={{ label: input.homeCity, value: input.homeCity }}
+          onChange={handleLocationSelect}
+          value={{ label: input.location, value: input.location }}
           loadOptions={handleInput}
         />
         <Form.Label>Age</Form.Label>
         <Form.Control name="age" value={input.age} onChange={handleChange} type="text" placeholder="Enter Your Age" required />
 
-        <Form.Label>Interest 1</Form.Label>
-        <Form.Select aria-label="Interest 1" name="interestOne" value={input.interestOne} onChange={handleChange}>
-          <option value="">Select an Interest</option>
-          {categories.map((category) => (
-            <option key={category.category} value={category.category}>{category.category}</option>
-          ))}
-        </Form.Select>
-        <Form.Label>Interest 2</Form.Label>
-        <Form.Select aria-label="Interest 2" name="interestTwo" value={input.interestTwo} onChange={handleChange}>
-          <option value="">Select an Interest</option>
-          {categories.map((category) => (
-            <option key={category.category} value={category.category}>{category.category}</option>
-          ))}
-        </Form.Select>
-        <Form.Label>Interest 3</Form.Label>
-        <Form.Select aria-label="Interest 3" name="interestThree" value={input.interestThree} onChange={handleChange}>
-          <option value="">Select an Interest</option>
-          {categories.map((category) => (
-            <option key={category.category} value={category.category}>{category.category}</option>
-          ))}
-        </Form.Select>
+        <Form.Label>Interests</Form.Label>
+        <AsyncSelect
+          isMulti
+          onChange={handleInterestSelect}
+          defaultOptions
+          value={input.interests}
+          loadOptions={getCategories}
+        />
         <br />
         <Button className="submit-btn" type="submit" variant="success">Submit</Button>
       </Form>
@@ -161,16 +168,21 @@ function UserForm({ obj }) {
 
 UserForm.propTypes = {
   obj: PropTypes.shape({
-    firebaseKey: PropTypes.string,
+    id: PropTypes.number,
     uid: PropTypes.string,
-    userName: PropTypes.string,
-    imageUrl: PropTypes.string,
-    tagLine: PropTypes.string,
-    homeCity: PropTypes.string,
-    age: PropTypes.string,
-    interestOne: PropTypes.string,
-    interestTwo: PropTypes.string,
-    interestThree: PropTypes.string,
+    name: PropTypes.string,
+    image: PropTypes.string,
+    tag: PropTypes.string,
+    location: PropTypes.string,
+    lat: PropTypes.number,
+    long: PropTypes.number,
+    age: PropTypes.number,
+    interests: PropTypes.arrayOf(
+      PropTypes.shape({
+        value: PropTypes.number,
+        label: PropTypes.string,
+      }),
+    ),
   }).isRequired,
 };
 

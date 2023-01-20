@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { getUserByFbKey } from '../../../api/user/userData';
+import { getUser } from '../../../api/user/userData';
 import UserForm from '../../../components/UserForm';
 
 const EditUser = () => {
@@ -9,7 +9,7 @@ const EditUser = () => {
   const { firebaseKey } = router.query;
 
   useEffect(() => {
-    getUserByFbKey(firebaseKey).then(setAuthUser);
+    getUser(firebaseKey).then(setAuthUser);
   }, [firebaseKey]);
 
   return (

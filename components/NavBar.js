@@ -9,7 +9,7 @@ import {
 import { useRouter } from 'next/router';
 import { useAuth } from '../utils/context/authContext';
 import { signIn, signOut } from '../utils/auth';
-import { getUser } from '../api/user/userData';
+import { checkUser } from '../api/user/userData';
 
 const NavBar = () => {
   const router = useRouter();
@@ -17,14 +17,15 @@ const NavBar = () => {
   const expand = false;
 
   const checkUserProfile = () => {
-    if (user.uid) {
-      getUser(user.uid).then((userObj) => {
-        if (!Object.values(userObj).length) {
+    if (user) {
+      checkUser(user.fbUser?.uid).then((response) => {
+        if (!response.id) {
           router.push('/user/new');
         }
       });
     }
   };
+
   const signOutUser = () => {
     router.push('/');
     signOut();
@@ -73,11 +74,6 @@ const NavBar = () => {
                     <span>Browse Events</span>
                   </Link>
                 </Navbar.Toggle>
-                <Link href="/browseDays" passHref>
-                  <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`}>
-                    <span>Browse Days</span>
-                  </Navbar.Toggle>
-                </Link>
                 <Link href="/search" passHref>
                   <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`}>
                     <span>Search</span>
@@ -89,14 +85,6 @@ const NavBar = () => {
                       <Link href="/event/new" passHref>
                         <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`}>
                           <span>Create Event</span>
-                        </Navbar.Toggle>
-                      </Link>
-                    ) : <></> }
-                  {user
-                    ? (
-                      <Link href="/day/new" passHref>
-                        <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`}>
-                          <span>Create Day</span>
                         </Navbar.Toggle>
                       </Link>
                     ) : <></> }
