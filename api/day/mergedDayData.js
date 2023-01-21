@@ -1,7 +1,6 @@
 import { getEventsByDay, getEventsByUid, updateEvent } from '../events/eventData';
 import { getImagesByEvent } from '../images/imageData';
-import { getSingleUserByUid } from '../user/userData';
-import { deleteSingleDay, getPublicDays, getSingleDay } from './dayData';
+import { deleteSingleDay, getSingleDay } from './dayData';
 
 const getDayPackage = (firebaseKey) => new Promise((resolve, reject) => {
   getSingleDay(firebaseKey).then((dayObj) => {
@@ -35,17 +34,17 @@ const getDayFormPackage = (firebaseKey, uid) => new Promise((resolve, reject) =>
   });
 });
 
-const getRandomPublicDay = () => new Promise((resolve, reject) => {
-  getPublicDays().then((eventsArr) => {
-    const index = Math.floor(Math.random() * eventsArr.length);
-    const event = eventsArr[index];
-    getSingleUserByUid(event.uid).then((evUser) => {
-      resolve({ ...event, evUser });
-    });
-  }).catch(reject);
-});
+// const getRandomPublicDay = () => new Promise((resolve, reject) => {
+//   getPublicDays().then((eventsArr) => {
+//     const index = Math.floor(Math.random() * eventsArr.length);
+//     const event = eventsArr[index];
+//     getSingleUserByUid(event.uid).then((evUser) => {
+//       resolve({ ...event, evUser });
+//     });
+//   }).catch(reject);
+// });
 
 // eslint-disable-next-line import/prefer-default-export
 export {
-  getDayPackage, deleteDay, getDayFormPackage, getRandomPublicDay,
+  getDayPackage, deleteDay, getDayFormPackage,
 };

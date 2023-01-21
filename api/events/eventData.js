@@ -22,8 +22,8 @@ const getSingleEvent = (firebaseKey) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-const getEventsByUid = (uid) => new Promise((resolve, reject) => {
-  fetch(`${dbUrl}/events?user=${uid}`)
+const getEventsByUid = (id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/events?id=${id}`)
     .then((response) => response.json())
     .then(resolve)
     .catch(reject);
