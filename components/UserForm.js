@@ -12,7 +12,6 @@ import { getCity } from '../api/tom-tom';
 import uploadPhoto from '../api/cloudinary';
 
 const initialState = {
-  id: 0,
   uid: '',
   name: '',
   image: '',
@@ -52,7 +51,7 @@ function UserForm({ obj }) {
     } else {
       setInput((prevState) => ({
         ...prevState,
-        homeCity: '',
+        location: '',
       }));
     }
   };
@@ -67,8 +66,10 @@ function UserForm({ obj }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (obj.id) {
-      updateUser(input).then(() => router.push('/user/profile'));
+      input.interests = input.interests.map((int) => int.value);
+      updateUser(input, obj.id).then(() => router.push('/user/profile'));
     } else {
+      input.interests = input.interests.map((int) => int.value);
       createUser(input).then(() => router.push('/user/profile'));
     }
   };
@@ -90,7 +91,7 @@ function UserForm({ obj }) {
       setInput((prevState) => (
         {
           ...prevState,
-          imageUrl: url,
+          image: url,
         }
       ));
     });
@@ -136,9 +137,9 @@ function UserForm({ obj }) {
       </div>
       <Form className="user-form" onSubmit={handleSubmit}>
         <Form.Label>Profile Name</Form.Label>
-        <Form.Control name="userName" value={input.name} onChange={handleChange} type="text" placeholder="Enter Profile Name" required />
+        <Form.Control name="name" value={input.name} onChange={handleChange} type="text" placeholder="Enter Profile Name" required />
         <Form.Label>Tag Line</Form.Label>
-        <Form.Control name="tagLine" value={input.tag} onChange={handleChange} type="text" placeholder="Just Tryna Be Awesome" required />
+        <Form.Control name="tag" value={input.tag} onChange={handleChange} type="text" placeholder="Just Tryna Be Awesome" required />
         <Form.Label>Location </Form.Label>
         <AsyncCreatable
           classNamePrefix="select"

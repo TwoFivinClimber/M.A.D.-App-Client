@@ -7,77 +7,86 @@ import { Rating } from 'react-simple-star-rating';
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import AsyncCreatable from 'react-select/async-creatable';
+import AsyncSelect from 'react-select/async';
 import { useAuth } from '../utils/context/authContext';
 import { getCategories } from '../api/categories';
 import uploadPhoto from '../api/cloudinary';
 import { createEvent, updateEvent } from '../api/events/eventData';
 import { createImages, deleteImagesByEvent } from '../api/images/mergedImage';
-import { getImagesByEvent } from '../api/images/imageData';
 import { getCity, getPoi } from '../api/tom-tom';
-import { getUser } from '../api/user/userData';
+import getDaytimes from '../api/daytime';
 
 const initialState = {
   title: '',
   date: '',
-  timeOfDay: '',
+  daytime: '',
   category: '',
   location: 'Find Where You Were',
+  lat: null,
+  long: null,
   uid: '',
   city: 'Search For Your City',
   description: '',
-  starRating: 0,
-  isPublic: false,
-  eventOfDay: '',
-  createdDate: Date.now(),
+  rating: 0,
+  public: false,
 };
 
 function EventForm({ obj }) {
   const { user } = useAuth();
-  const [authUser, setAuthUser] = useState({});
   const [input, setInput] = useState(initialState);
-  const [categories, setCategories] = useState([]);
-  // From Cloudinary For Sample Render and Firebase ⬇️  //
   const [imgUrls, setImgUrls] = useState([]);
   const router = useRouter();
 
   const handleChange = (e) => {
     // eslint-disable-next-line prefer-const
     let { name, value } = e.target;
-    if (name === 'isPublic') {
+    if (name === 'public') {
       value = e.target.checked;
-      console.warn(name, value);
       setInput((prevState) => ({
         ...prevState,
         [name]: value,
       }));
-      console.warn(name, value);
     } else {
       setInput((prevState) => ({
         ...prevState,
         [name]: value,
       }));
     }
+    console.warn(input);
+  };
+
+  const handleDaytime = (e) => {
+    setInput((prevState) => ({
+      ...prevState,
+      daytime: e,
+    }));
+  };
+
+  const handleCategory = (e) => {
+    setInput((prevState) => ({
+      ...prevState,
+      category: e,
+    }));
+    console.warn(e);
   };
 
   const handleRating = (e) => {
-    const name = 'starRating';
     const value = e;
     setInput((prevState) => ({
       ...prevState,
-      [name]: value,
+      rating: value,
     }));
-    console.warn(input);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (obj.firebaseKey) {
-      deleteImagesByEvent(obj.firebaseKey).then(() => {
+    if (obj.id) {
+      deleteImagesByEvent(obj.id).then(() => {
         updateEvent(input).then(() => {
           const imageObjects = imgUrls.map((url) => (
             {
               imageUrl: url,
-              eventId: obj.firebaseKey,
+              eventId: obj.id,
               uid: user.uid,
             }
           ));
@@ -128,7 +137,7 @@ function EventForm({ obj }) {
 
   // TOM TOM API//
   const locationOptions = (target) => new Promise((resolve, reject) => {
-    getPoi(target, authUser.lat, authUser.long).then((placesArr) => {
+    getPoi(target, user.lat, user.long).then((placesArr) => {
       resolve(placesArr.filter((place) => place.value.toLowerCase().includes(target.toLowerCase())));
     }).catch(reject);
   });
@@ -139,15 +148,19 @@ function EventForm({ obj }) {
     }).catch(reject);
   });
 
-  const handleSelect = (selected) => {
+  const handleLocationSelect = (selected) => {
     if (selected) {
       if (selected.city) {
-        const { name, value } = selected;
+        const {
+          name, value, lat, long,
+        } = selected;
         const city = `${selected.city}, ${selected.state}`;
         setInput((prevState) => ({
           ...prevState,
           [name]: value,
           city,
+          lat,
+          long,
         }));
       } else {
         const { value } = selected;
@@ -179,22 +192,14 @@ function EventForm({ obj }) {
   };
 
   useEffect(() => {
-    if (obj.firebaseKey) {
+    if (obj.id) {
       setInput(obj);
     }
-    getImagesByEvent(obj.firebaseKey).then((imageArr) => {
-      const imageUrls = imageArr.map((img) => img.imageUrl);
-      setImgUrls(imageUrls);
-    });
-    getCategories().then(setCategories);
-    getUser(user.uid).then((userArr) => {
-      setAuthUser(userArr[0]);
-    });
   }, [obj]);
 
   return (
     <>
-      <h4>{obj.firebaseKey ? 'Edit' : 'Create'} Event</h4>
+      <h4>{obj.id ? 'Edit' : 'Create'} Event</h4>
       <Form className="event-from" onSubmit={handleSubmit}>
         <div className="event-form-columns">
           <div className="event-form-title-date">
@@ -210,23 +215,21 @@ function EventForm({ obj }) {
           <div className="event-form-time-category">
             <div>
               <Form.Label>Time of Day</Form.Label>
-              <Form.Select aria-label="Time of Day" name="timeOfDay" value={input.timeOfDay} onChange={handleChange} required>
-                <option value="">Select a Time of Day</option>
-                <option value="morning">Morning</option>
-                <option value="day-time">Day Time</option>
-                <option value="afternoon">Afternoon</option>
-                <option value="evening">Evening</option>
-                <option value="night">Night</option>
-              </Form.Select>
+              <AsyncSelect
+                cacheOptions
+                loadOptions={getDaytimes}
+                onChange={handleDaytime}
+                defaultOptions
+              />
             </div>
             <div>
               <Form.Label>Category</Form.Label>
-              <Form.Select aria-label="category" name="category" value={input.category} onChange={handleChange} required>
-                <option value="">Select a Category</option>
-                {categories.map((category) => (
-                  <option key={category.category} value={category.category}>{category.category}</option>
-                ))}
-              </Form.Select>
+              <AsyncSelect
+                cacheOptions
+                loadOptions={getCategories}
+                onChange={handleCategory}
+                defaultOptions
+              />
             </div>
           </div>
           <div className="event-form-location-city">
@@ -236,7 +239,7 @@ function EventForm({ obj }) {
                 classNamePrefix="select"
                 backspaceRemovesValue
                 isClearable
-                onChange={handleSelect}
+                onChange={handleLocationSelect}
                 value={{ label: input.location, value: input.location }}
                 loadOptions={locationOptions}
                 required
@@ -268,7 +271,7 @@ function EventForm({ obj }) {
               size={26}
               allowHalfIcon
               tooltipArray={['Bad', 'Bad', 'Not Bad', 'Not Bad', 'Good', 'Good', 'Great', 'Great', 'Awesome', 'M.A.D. Awesome']}
-              ratingValue={input.starRating}
+              ratingValue={input.rating}
               onClick={handleRating}
               tooltipStyle={{
                 height: 'auto', width: 'auto', fontSize: '13px', padding: '2px 4px', textAlign: 'center', marginTop: '4px', marginLeft: '10px',
@@ -277,9 +280,9 @@ function EventForm({ obj }) {
           </div>
           <Form.Check
             className="event-form-public-check"
-            name="isPublic"
+            name="public"
             onChange={handleChange}
-            checked={input.isPublic}
+            checked={input.public}
             type="switch"
             id="custom-switch"
             label="Make it Public ?"
@@ -298,7 +301,7 @@ function EventForm({ obj }) {
           ))}
         </div>
         <div className="event-form-buttons">
-          <Button className="submit-btn" type="submit" variant="success">{obj.firebaseKey ? 'Update' : 'Submit'}</Button>
+          <Button className="submit-btn" type="submit" variant="success">{obj.id ? 'Update' : 'Submit'}</Button>
           <Button className="cancel-btn" variant="danger" onClick={() => router.push('/user/profile')}>Cancel</Button>
         </div>
       </Form>
@@ -322,7 +325,7 @@ EventForm.propTypes = {
     starRating: PropTypes.number,
     isPublic: PropTypes.bool,
     uid: PropTypes.string,
-    firebaseKey: PropTypes.string,
+    id: PropTypes.number,
   }),
 };
 

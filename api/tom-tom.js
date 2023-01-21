@@ -7,6 +7,7 @@ const getPoi = (input, lat, long) => new Promise((resolve, reject) => {
   axios.get(`https://api.tomtom.com/search/2/search/${input}.json?&lat=${lat}&lon=${long}&language=en-US&extendedPostalCodesFor=POI&minFuzzyLevel=1&maxFuzzyLevel=2&idxSet=POI&view=Unified&relatedPois=off&key=${tomApi}`)
     .then((result) => {
       const poiArray = Object.values(result.data.results);
+      console.warn(result.data.results);
       const returnArray = poiArray.map((poi) => (
         {
           value: poi.poi.name,
@@ -14,6 +15,8 @@ const getPoi = (input, lat, long) => new Promise((resolve, reject) => {
           city: poi.address.localName,
           state: poi.address.countrySubdivision,
           name: 'location',
+          lat: poi.position.lat,
+          long: poi.position.lon,
         }
       ));
       resolve(returnArray);
@@ -28,7 +31,7 @@ const getCity = (input) => new Promise((resolve, reject) => {
       const returnArray = cityArray.map((city) => ({
         value: `${city.address.municipality}, ${city.address.countrySubdivision}`,
         label: `${city.address.municipality}, ${city.address.countrySubdivision}`,
-        name: 'homeCity',
+        name: 'location',
         lat: city.position.lat,
         long: city.position.lon,
       }));

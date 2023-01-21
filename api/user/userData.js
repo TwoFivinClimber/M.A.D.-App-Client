@@ -33,24 +33,35 @@ const getUserByFbKey = (firebaseKey) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-const updateUser = (update) => new Promise((resolve, reject) => {
-  axios.patch(`${dbUrl}/users/${update.firebaseKey}.json`, update)
-    .then((userObj) => resolve(userObj.data))
+const updateUser = (userObj, id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/users/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userObj),
+  })
+    .then(resolve)
     .catch(reject);
 });
 
 const createUser = (userObj) => new Promise((resolve, reject) => {
-  axios.post(`${dbUrl}/users.json`, userObj)
-    .then((response) => {
-      const update = { firebaseKey: response.data.name };
-      updateUser(update)
-        .then((userObject) => resolve(userObject.data))
-        .catch(reject);
-    });
+  fetch(`${dbUrl}/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userObj),
+  })
+    .then((response) => response.json())
+    .then(resolve)
+    .catch(reject);
 });
 
-const deleteUser = (firebaseKey) => new Promise((resolve, reject) => {
-  axios.delete(`${dbUrl}/users/${firebaseKey}.json`)
+const deleteUser = (id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/users/${id}`, {
+    method: 'DELETE',
+  })
     .then(resolve)
     .catch(reject);
 });
