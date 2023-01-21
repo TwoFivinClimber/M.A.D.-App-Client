@@ -13,15 +13,18 @@ const createImage = (obj) => new Promise((resolve, reject) => {
 });
 
 const getImagesByEvent = (eventId) => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/images.json?orderBy="eventId"&equalTo="${eventId}"`)
-    .then((photoArr) => resolve(Object.values(photoArr.data)))
-    .catch(reject);
-});
-
-const deleteImage = (firebaseKey) => new Promise((resolve, reject) => {
-  axios.delete(`${dbUrl}/images/${firebaseKey}.json`)
+  fetch(`${dbUrl}/events?event=${eventId}`)
+    .then((response) => response.json())
     .then(resolve)
     .catch(reject);
 });
 
-export { createImage, getImagesByEvent, deleteImage };
+const deleteDbImage = (id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/photos/${id}`, {
+    method: 'DELETE',
+  })
+    .then(resolve)
+    .catch(reject);
+});
+
+export { createImage, getImagesByEvent, deleteDbImage };

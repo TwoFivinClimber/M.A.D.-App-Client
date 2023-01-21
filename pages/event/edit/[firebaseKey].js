@@ -9,12 +9,16 @@ function EditEvent() {
 
   const { firebaseKey } = router.query;
 
-  useEffect(() => {
+  const getTheContent = () => {
     getSingleEvent(firebaseKey).then(setEvent);
+  };
+
+  useEffect(() => {
+    getTheContent();
   }, [firebaseKey]);
 
   return (
-    <EventForm obj={event} />
+    <EventForm obj={event} onUpdate={getTheContent} />
   );
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import {
@@ -8,13 +9,18 @@ import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import AsyncCreatable from 'react-select/async-creatable';
 import AsyncSelect from 'react-select/async';
+import sha1 from 'sha1';
 import { useAuth } from '../utils/context/authContext';
+import { uploadPhoto, deletePhoto } from '../api/cloudinary';
 import { getCategories } from '../api/categories';
-import uploadPhoto from '../api/cloudinary';
 import { createEvent, updateEvent } from '../api/events/eventData';
 import { createImages, deleteImagesByEvent } from '../api/images/mergedImage';
 import { getCity, getPoi } from '../api/tom-tom';
 import getDaytimes from '../api/daytime';
+import { clientCredentials } from '../utils/client';
+
+const cldnryApiKey = clientCredentials.cloudinaryApiKey;
+const cldnrySecret = clientCredentials.cloudinaryApiSecret;
 
 const initialState = {
   title: '',
@@ -24,17 +30,16 @@ const initialState = {
   location: 'Find Where You Were',
   lat: null,
   long: null,
-  uid: '',
   city: 'Search For Your City',
   description: '',
   rating: 0,
   public: false,
+  photos: [],
 };
 
 function EventForm({ obj }) {
   const { user } = useAuth();
   const [input, setInput] = useState(initialState);
-  const [imgUrls, setImgUrls] = useState([]);
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -52,7 +57,7 @@ function EventForm({ obj }) {
         [name]: value,
       }));
     }
-    console.warn(input);
+    console.warn(cldnryApiKey);
   };
 
   const handleDaytime = (e) => {
@@ -83,7 +88,7 @@ function EventForm({ obj }) {
     if (obj.id) {
       deleteImagesByEvent(obj.id).then(() => {
         updateEvent(input).then(() => {
-          const imageObjects = imgUrls.map((url) => (
+          const imageObjects = input.photos.map((url) => (
             {
               imageUrl: url,
               eventId: obj.id,
@@ -95,44 +100,54 @@ function EventForm({ obj }) {
         });
       });
     } else {
-      const payload = { ...input, uid: user.uid };
-      createEvent(payload).then((response) => {
-        const imageObjects = imgUrls.map((url) => (
-          {
-            imageUrl: url,
-            eventId: response.firebaseKey,
-            uid: user.uid,
-          }
-        ));
-        createImages(imageObjects);
+      const payload = { ...input, id: user.id };
+      payload.daytime = payload.daytime.value;
+      payload.category = payload.category.value;
+      createEvent(payload).then(() => {
         router.push('/user/profile');
       });
     }
   };
 
-  const uploadImage = async (e) => {
+  const uploadImage = (e) => {
     if (e.target.files.length) {
       const payload = new FormData();
       payload.append('file', e.target.files[0]);
-      payload.append('upload_preset', 'nofzejna');
+      payload.append('upload_preset', 'f76x3jwi');
       payload.append('cloud_name', 'twofiveclimb');
-      await uploadPhoto(payload).then((url) => {
-        setImgUrls((prevState) => (
-          [...prevState,
-            url,
-          ]
-        ));
+      uploadPhoto(payload).then((data) => {
+        const imageObj = {
+          url: data.url,
+          publicId: data.public_id,
+        };
+        setInput((prevState) => ({
+          ...prevState,
+          photos: [...prevState.photos,
+            imageObj],
+        }));
       });
     }
   };
 
-  const removePhoto = (url) => {
-    setImgUrls((prevState) => {
-      const prevCopy = [...prevState];
-      const index = prevCopy.indexOf(url);
-      prevCopy.splice(index, 1);
+  const deleteImage = (imageObj) => {
+    const timeStamp = Math.round((new Date().getTime() / 1000));
+    const data = new FormData();
+    data.append('public_id', imageObj.publicId);
+    data.append('timestamp', timeStamp);
+    data.append('api_key', cldnryApiKey);
+    data.append('signature', sha1(`public_id=${imageObj.publicId}&timestamp=${timeStamp}${cldnrySecret}`));
+    deletePhoto(data).then(() => {
+    });
+  };
+
+  const removePhoto = (image) => {
+    setInput((prevState) => {
+      const prevCopy = prevState;
+      const index = prevCopy.photos.findIndex((imageObj) => imageObj.url === image.url);
+      prevCopy.photos.splice(index, 1);
       return prevCopy;
     });
+    deleteImage(image);
   };
 
   // TOM TOM API//
@@ -193,7 +208,11 @@ function EventForm({ obj }) {
 
   useEffect(() => {
     if (obj.id) {
-      setInput(obj);
+      setInput({
+        ...obj,
+        daytime: { value: obj.daytime.id, label: obj.daytime.name },
+        category: { value: obj.category.id, label: obj.category.name },
+      });
     }
   }, [obj]);
 
@@ -220,6 +239,7 @@ function EventForm({ obj }) {
                 loadOptions={getDaytimes}
                 onChange={handleDaytime}
                 defaultOptions
+                value={input.daytime}
               />
             </div>
             <div>
@@ -229,6 +249,7 @@ function EventForm({ obj }) {
                 loadOptions={getCategories}
                 onChange={handleCategory}
                 defaultOptions
+                value={input.category}
               />
             </div>
           </div>
@@ -293,10 +314,10 @@ function EventForm({ obj }) {
           <Form.Control type="file" onChange={uploadImage} />
         </div>
         <div className="uploaded-Images-Div">
-          {imgUrls.map((url) => (
-            <div key={url} className="uploaded-Images-Container">
-              <Image className="event-Form-Photos" rounded src={url} />
-              <CloseButton onClick={() => removePhoto(url)} className="image-Delete" />
+          {input.photos?.map((photo) => (
+            <div key={photo.url} className="uploaded-Images-Container">
+              <Image className="event-Form-Photos" rounded src={photo.url} />
+              <CloseButton onClick={() => removePhoto(photo)} className="image-Delete" />
             </div>
           ))}
         </div>
@@ -309,15 +330,11 @@ function EventForm({ obj }) {
   );
 }
 
-// <Form.Label>Photos</Form.Label>
-// <input type="file" onChange={(e) => setImage(e.target.files[0])} />
-// <Button onClick={uploadImage}>Upload</Button>
-
 EventForm.propTypes = {
   obj: PropTypes.shape({
     title: PropTypes.string,
     date: PropTypes.string,
-    timeOfDay: PropTypes.string,
+    daytime: PropTypes.string,
     category: PropTypes.string,
     location: PropTypes.string,
     city: PropTypes.string,

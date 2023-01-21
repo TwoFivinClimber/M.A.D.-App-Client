@@ -16,9 +16,10 @@ const getPublicEvents = () => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-const getSingleEvent = (firebaseKey) => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/events/${firebaseKey}.json`)
-    .then((eventObj) => resolve(eventObj.data))
+const getSingleEvent = (id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/events/${id}`)
+    .then((response) => response.json())
+    .then(resolve)
     .catch(reject);
 });
 
@@ -42,12 +43,15 @@ const deleteSingleEvent = (firebaseKey) => new Promise((resolve, reject) => {
 });
 
 const createEvent = (obj) => new Promise((resolve, reject) => {
-  axios.post(`${dbUrl}/events.json`, obj)
-    .then((response) => {
-      const update = { firebaseKey: response.data.name };
-      axios.patch(`${dbUrl}/events/${response.data.name}.json`, update)
-        .then((eventObj) => resolve(eventObj.data));
-    }).catch(reject);
+  fetch(`${dbUrl}/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(obj),
+  })
+    .then(resolve)
+    .catch(reject);
 });
 
 const getEventsByDay = (dayFbKey) => new Promise((resolve, reject) => {

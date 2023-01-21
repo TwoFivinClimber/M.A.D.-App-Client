@@ -47,7 +47,7 @@ const EventCardNew = ({ obj, onUpdate }) => {
     <Card className="event-card">
       <div className="event-card-header">
         <div className="event-card-user">
-          {obj.uid.id === user.uid ? (
+          {obj.uid.id === user.id ? (
             <Link href="/user/profile" passHref>
               <Image className="comment-User-Image" src={obj.uid.image} />
             </Link>
@@ -60,7 +60,7 @@ const EventCardNew = ({ obj, onUpdate }) => {
         </div>
         <DropdownButton align="end" variant="secondary" className="event-card-dropdown" title={<FaEllipsisV />}>
           <Dropdown.Item className="drop-Down-Item" onClick={() => router.push(`/event/${obj.id}`)}>View</Dropdown.Item>
-          {user.uid === obj.uid ? (
+          {user.id === obj.uid.id ? (
             <>
               <Dropdown.Item className="drop-Down-Item" onClick={() => router.push(`/event/edit/${obj.id}`)}>Edit</Dropdown.Item>
               <Dropdown.Divider />
