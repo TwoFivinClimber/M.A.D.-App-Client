@@ -20,7 +20,7 @@ function BrowseEvents() {
       <h4>Browse Events</h4>
       <div className="browse-Events-div">
         {eventsDateSort?.map((event) => (
-          <EventCardNew key={event.firebaseKey} obj={event} onUpdate={getTheEvents} />
+          <EventCardNew key={event.id} obj={event} onUpdate={getTheEvents} />
         ))}
       </div>
     </div>

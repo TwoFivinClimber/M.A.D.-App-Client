@@ -138,7 +138,7 @@ function Search() {
       </div>
       <div className="search-Results-Div">
         {results?.map((event) => (
-          <EventCardNew key={event.firebaseKey} onUpdate={getTheContent} obj={event} />
+          <EventCardNew key={event.id} onUpdate={getTheContent} obj={event} />
         ))}
       </div>
     </>

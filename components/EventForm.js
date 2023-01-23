@@ -9,17 +9,12 @@ import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import AsyncCreatable from 'react-select/async-creatable';
 import AsyncSelect from 'react-select/async';
-import sha1 from 'sha1';
 import { useAuth } from '../utils/context/authContext';
 import { uploadPhoto, deletePhoto } from '../api/cloudinary';
 import { getCategories } from '../api/categories';
 import { createEvent, updateEvent } from '../api/events/eventData';
 import { getCity, getPoi } from '../api/tom-tom';
 import getDaytimes from '../api/daytime';
-import { clientCredentials } from '../utils/client';
-
-const cldnryApiKey = clientCredentials.cloudinaryApiKey;
-const cldnrySecret = clientCredentials.cloudinaryApiSecret;
 
 const initialState = {
   title: '',
@@ -56,7 +51,6 @@ function EventForm({ obj }) {
         [name]: value,
       }));
     }
-    console.warn(input);
   };
 
   const handleDaytime = (e) => {
@@ -101,11 +95,8 @@ function EventForm({ obj }) {
 
   const uploadImage = (e) => {
     if (e.target.files.length) {
-      const payload = new FormData();
-      payload.append('file', e.target.files[0]);
-      payload.append('upload_preset', 'f76x3jwi');
-      payload.append('cloud_name', 'twofiveclimb');
-      uploadPhoto(payload).then((data) => {
+      const file = e.target.files[0];
+      uploadPhoto(file).then((data) => {
         const imageObj = {
           url: data.url,
           publicId: data.public_id,
@@ -119,16 +110,6 @@ function EventForm({ obj }) {
     }
   };
 
-  const deleteImage = (imageObj) => {
-    const timeStamp = Math.round((new Date().getTime() / 1000));
-    const data = new FormData();
-    data.append('public_id', imageObj.publicId);
-    data.append('timestamp', timeStamp);
-    data.append('api_key', cldnryApiKey);
-    data.append('signature', sha1(`public_id=${imageObj.publicId}&timestamp=${timeStamp}${cldnrySecret}`));
-    deletePhoto(data);
-  };
-
   const removePhoto = (image) => {
     setInput((prevState) => {
       const prevCopy = { ...prevState };
@@ -136,7 +117,16 @@ function EventForm({ obj }) {
       prevCopy.photos.splice(index, 1);
       return prevCopy;
     });
-    deleteImage(image);
+    deletePhoto(image);
+  };
+
+  const handelCancel = () => {
+    const { photos } = input;
+    const cldDelete = photos.filter((photo) => !photo.id);
+    const deletePhotos = cldDelete.map((photo) => deletePhoto(photo));
+    Promise.all(deletePhotos).then(() => {
+      router.push('/user/profile');
+    });
   };
 
   // TOM TOM API//
@@ -312,7 +302,7 @@ function EventForm({ obj }) {
         </div>
         <div className="event-form-buttons">
           <Button className="submit-btn" type="submit" variant="success">{obj.id ? 'Update' : 'Submit'}</Button>
-          <Button className="cancel-btn" variant="danger" onClick={() => router.push('/user/profile')}>Cancel</Button>
+          <Button className="cancel-btn" variant="danger" onClick={handelCancel}>Cancel</Button>
         </div>
       </Form>
     </>

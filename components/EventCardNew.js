@@ -10,7 +10,7 @@ import { FaEllipsisV } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Carousel from 'react-bootstrap/Carousel';
-import { deleteEvent } from '../api/events/mergedEvents';
+import { deleteEvent } from '../api/events/eventData';
 import { useAuth } from '../utils/context/authContext';
 
 const EventCardNew = ({ obj, onUpdate }) => {

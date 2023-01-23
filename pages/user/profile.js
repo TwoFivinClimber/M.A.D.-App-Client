@@ -61,7 +61,7 @@ function UserProfile() {
       <h4 className="profile-events-header">Post Count: {content.length}</h4>
       <div className="user-Events-Div">
         {renderArray.map((event) => (
-          <EventCardNew obj={event} onUpdate={getTheContent} />
+          <EventCardNew key={event.id} obj={event} onUpdate={getTheContent} />
         ))}
       </div>
     </>

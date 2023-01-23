@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { clientCredentials } from '../../utils/client';
+import deleteCldImages from '../images/mergedImage';
 
 const dbUrl = clientCredentials.databaseURL;
 
@@ -42,12 +43,14 @@ const updateEvent = (obj) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-const deleteSingleEvent = (id) => new Promise((resolve, reject) => {
-  fetch(`${dbUrl}/events/${id}`, {
-    method: 'DELETE',
-  })
-    .then(resolve)
-    .catch(reject);
+const deleteEvent = (id) => new Promise((resolve, reject) => {
+  deleteCldImages(id).then(() => {
+    fetch(`${dbUrl}/events/${id}`, {
+      method: 'DELETE',
+    })
+      .then(resolve)
+      .catch(reject);
+  });
 });
 
 const createEvent = (obj) => new Promise((resolve, reject) => {
@@ -69,5 +72,5 @@ const getEventsByDay = (dayFbKey) => new Promise((resolve, reject) => {
 });
 
 export {
-  getEvents, createEvent, getSingleEvent, getEventsByUid, deleteSingleEvent, getPublicEvents, updateEvent, getEventsByDay,
+  getEvents, createEvent, getSingleEvent, getEventsByUid, deleteEvent, getPublicEvents, updateEvent, getEventsByDay,
 };
