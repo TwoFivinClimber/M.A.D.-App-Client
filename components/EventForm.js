@@ -14,7 +14,6 @@ import { useAuth } from '../utils/context/authContext';
 import { uploadPhoto, deletePhoto } from '../api/cloudinary';
 import { getCategories } from '../api/categories';
 import { createEvent, updateEvent } from '../api/events/eventData';
-import { createImages, deleteImagesByEvent } from '../api/images/mergedImage';
 import { getCity, getPoi } from '../api/tom-tom';
 import getDaytimes from '../api/daytime';
 import { clientCredentials } from '../utils/client';
@@ -57,7 +56,7 @@ function EventForm({ obj }) {
         [name]: value,
       }));
     }
-    console.warn(cldnryApiKey);
+    console.warn(input);
   };
 
   const handleDaytime = (e) => {
@@ -72,7 +71,6 @@ function EventForm({ obj }) {
       ...prevState,
       category: e,
     }));
-    console.warn(e);
   };
 
   const handleRating = (e) => {
@@ -86,18 +84,10 @@ function EventForm({ obj }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (obj.id) {
-      deleteImagesByEvent(obj.id).then(() => {
-        updateEvent(input).then(() => {
-          const imageObjects = input.photos.map((url) => (
-            {
-              imageUrl: url,
-              eventId: obj.id,
-              uid: user.uid,
-            }
-          ));
-          createImages(imageObjects);
-          router.push('/user/profile');
-        });
+      input.daytime = input.daytime.value;
+      input.category = input.category.value;
+      updateEvent(input).then(() => {
+        router.push('/user/profile');
       });
     } else {
       const payload = { ...input, id: user.id };
@@ -136,13 +126,12 @@ function EventForm({ obj }) {
     data.append('timestamp', timeStamp);
     data.append('api_key', cldnryApiKey);
     data.append('signature', sha1(`public_id=${imageObj.publicId}&timestamp=${timeStamp}${cldnrySecret}`));
-    deletePhoto(data).then(() => {
-    });
+    deletePhoto(data);
   };
 
   const removePhoto = (image) => {
     setInput((prevState) => {
-      const prevCopy = prevState;
+      const prevCopy = { ...prevState };
       const index = prevCopy.photos.findIndex((imageObj) => imageObj.url === image.url);
       prevCopy.photos.splice(index, 1);
       return prevCopy;

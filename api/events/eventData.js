@@ -10,7 +10,7 @@ const getEvents = () => new Promise((resolve, reject) => {
 });
 
 const getPublicEvents = () => new Promise((resolve, reject) => {
-  fetch(`${dbUrl}/events?Public=True`)
+  fetch(`${dbUrl}/events?public=True`)
     .then((response) => response.json())
     .then(resolve)
     .catch(reject);
@@ -31,13 +31,21 @@ const getEventsByUid = (id) => new Promise((resolve, reject) => {
 });
 
 const updateEvent = (obj) => new Promise((resolve, reject) => {
-  axios.patch(`${dbUrl}/events/${obj.firebaseKey}.json`, obj)
+  fetch(`${dbUrl}/events/${obj.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(obj),
+  })
     .then(resolve)
     .catch(reject);
 });
 
-const deleteSingleEvent = (firebaseKey) => new Promise((resolve, reject) => {
-  axios.delete(`${dbUrl}/events/${firebaseKey}.json`)
+const deleteSingleEvent = (id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/events/${id}`, {
+    method: 'DELETE',
+  })
     .then(resolve)
     .catch(reject);
 });

@@ -1,5 +1,5 @@
 import { getDaysbyUid, getPublicDays } from '../day/dayData';
-import { deleteImage, getImagesByEvent } from '../images/imageData';
+import { deleteDbImage, getImagesByEvent } from '../images/imageData';
 import {
   deleteSingleEvent, getEventsByDay, getEventsByUid, getPublicEvents, updateEvent,
 } from './eventData';
@@ -23,7 +23,7 @@ const handleDayEvents = (dayFirebaseKey, eventsFbkArr) => new Promise((resolve, 
 
 const deleteEvent = (firebaseKey) => new Promise((resolve, reject) => {
   getImagesByEvent(firebaseKey).then((imageArr) => {
-    const deleteImages = imageArr.map((image) => deleteImage(image.firebaseKey));
+    const deleteImages = imageArr.map((image) => deleteDbImage(image.firebaseKey));
     Promise.all(deleteImages).then(() => {
       resolve(deleteSingleEvent(firebaseKey));
     }).catch(reject);
@@ -38,16 +38,7 @@ const getEventsAndDays = () => new Promise((resolve, reject) => {
   });
 });
 
-// const getEventPackage = (firebaseKey) => new Promise((resolve, reject) => {
-//   getSingleEvent(firebaseKey).then((eventObj) => {
-//     getImagesByEvent(firebaseKey).then((imagesArr) => {
-//       getSingleUserByUid(eventObj.uid).then((userObj) => {
-//         resolve({ ...eventObj, images: imagesArr, eventUser: userObj });
-//       });
-//     });
-//   }).catch(reject);
-// });
-
+/// used in search
 const getEventCities = () => new Promise((resolve, reject) => {
   getPublicEvents().then((eventsArray) => {
     const returnArray = eventsArray.map((event) => ({
