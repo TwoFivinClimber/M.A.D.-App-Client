@@ -7,7 +7,6 @@ const getPoi = (input, lat, long) => new Promise((resolve, reject) => {
   axios.get(`https://api.tomtom.com/search/2/search/${input}.json?&lat=${lat}&lon=${long}&language=en-US&extendedPostalCodesFor=POI&minFuzzyLevel=1&maxFuzzyLevel=2&idxSet=POI&view=Unified&relatedPois=off&key=${tomApi}`)
     .then((result) => {
       const poiArray = Object.values(result.data.results);
-      console.warn(result.data.results);
       const returnArray = poiArray.map((poi) => (
         {
           value: poi.poi.name,

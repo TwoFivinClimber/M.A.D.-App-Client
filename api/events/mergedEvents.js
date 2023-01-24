@@ -1,8 +1,5 @@
-import { getDaysbyUid, getPublicDays } from '../day/dayData';
-import { deleteImage, getImagesByEvent } from '../images/imageData';
-import {
-  deleteSingleEvent, getEventsByDay, getEventsByUid, getPublicEvents, updateEvent,
-} from './eventData';
+import { getPublicDays } from '../day/dayData';
+import { getPublicEvents, updateEvent, getEventsByDay } from './eventData';
 import { clientCredentials } from '../../utils/client';
 
 const dbUrl = clientCredentials.databaseURL;
@@ -21,15 +18,6 @@ const handleDayEvents = (dayFirebaseKey, eventsFbkArr) => new Promise((resolve, 
   });
 });
 
-const deleteEvent = (firebaseKey) => new Promise((resolve, reject) => {
-  getImagesByEvent(firebaseKey).then((imageArr) => {
-    const deleteImages = imageArr.map((image) => deleteImage(image.firebaseKey));
-    Promise.all(deleteImages).then(() => {
-      resolve(deleteSingleEvent(firebaseKey));
-    }).catch(reject);
-  });
-});
-
 const getEventsAndDays = () => new Promise((resolve, reject) => {
   getPublicEvents().then((eventsArr) => {
     getPublicDays().then((daysArr) => {
@@ -38,16 +26,7 @@ const getEventsAndDays = () => new Promise((resolve, reject) => {
   });
 });
 
-// const getEventPackage = (firebaseKey) => new Promise((resolve, reject) => {
-//   getSingleEvent(firebaseKey).then((eventObj) => {
-//     getImagesByEvent(firebaseKey).then((imagesArr) => {
-//       getSingleUserByUid(eventObj.uid).then((userObj) => {
-//         resolve({ ...eventObj, images: imagesArr, eventUser: userObj });
-//       });
-//     });
-//   }).catch(reject);
-// });
-
+/// used in search
 const getEventCities = () => new Promise((resolve, reject) => {
   getPublicEvents().then((eventsArray) => {
     const returnArray = eventsArray.map((event) => ({
@@ -61,13 +40,10 @@ const getEventCities = () => new Promise((resolve, reject) => {
 });
 
 const getPublicContentByUser = (uid) => new Promise((resolve, reject) => {
-  getEventsByUid(uid).then((eventsArr) => {
-    const publicEvents = eventsArr.filter((event) => event.isPublic);
-    getDaysbyUid(uid).then((daysArr) => {
-      const publicDays = daysArr.filter((day) => day.isPublic);
-      resolve([...publicEvents, ...publicDays]);
-    }).catch(reject);
-  });
+  fetch(`${dbUrl}/events?id=${uid}&public=True`)
+    .then((response) => response.json())
+    .then(resolve)
+    .catch(reject);
 });
 
 const getRandomPublicEvent = () => new Promise((resolve, reject) => {
@@ -79,5 +55,5 @@ const getRandomPublicEvent = () => new Promise((resolve, reject) => {
 
 // eslint-disable-next-line import/prefer-default-export
 export {
-  handleDayEvents, deleteEvent, getEventsAndDays, getEventCities, getPublicContentByUser, getRandomPublicEvent,
+  handleDayEvents, getEventsAndDays, getEventCities, getPublicContentByUser, getRandomPublicEvent,
 };

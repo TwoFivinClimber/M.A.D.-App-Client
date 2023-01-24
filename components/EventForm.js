@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import {
@@ -9,10 +10,9 @@ import PropTypes from 'prop-types';
 import AsyncCreatable from 'react-select/async-creatable';
 import AsyncSelect from 'react-select/async';
 import { useAuth } from '../utils/context/authContext';
+import { uploadPhoto, deletePhoto } from '../api/cloudinary';
 import { getCategories } from '../api/categories';
-import uploadPhoto from '../api/cloudinary';
 import { createEvent, updateEvent } from '../api/events/eventData';
-import { createImages, deleteImagesByEvent } from '../api/images/mergedImage';
 import { getCity, getPoi } from '../api/tom-tom';
 import getDaytimes from '../api/daytime';
 
@@ -24,17 +24,16 @@ const initialState = {
   location: 'Find Where You Were',
   lat: null,
   long: null,
-  uid: '',
   city: 'Search For Your City',
   description: '',
   rating: 0,
   public: false,
+  photos: [],
 };
 
 function EventForm({ obj }) {
   const { user } = useAuth();
   const [input, setInput] = useState(initialState);
-  const [imgUrls, setImgUrls] = useState([]);
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -52,7 +51,6 @@ function EventForm({ obj }) {
         [name]: value,
       }));
     }
-    console.warn(input);
   };
 
   const handleDaytime = (e) => {
@@ -67,7 +65,6 @@ function EventForm({ obj }) {
       ...prevState,
       category: e,
     }));
-    console.warn(e);
   };
 
   const handleRating = (e) => {
@@ -81,57 +78,54 @@ function EventForm({ obj }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (obj.id) {
-      deleteImagesByEvent(obj.id).then(() => {
-        updateEvent(input).then(() => {
-          const imageObjects = imgUrls.map((url) => (
-            {
-              imageUrl: url,
-              eventId: obj.id,
-              uid: user.uid,
-            }
-          ));
-          createImages(imageObjects);
-          router.push('/user/profile');
-        });
+      input.daytime = input.daytime.value;
+      input.category = input.category.value;
+      updateEvent(input).then(() => {
+        router.push('/user/profile');
       });
     } else {
-      const payload = { ...input, uid: user.uid };
-      createEvent(payload).then((response) => {
-        const imageObjects = imgUrls.map((url) => (
-          {
-            imageUrl: url,
-            eventId: response.firebaseKey,
-            uid: user.uid,
-          }
-        ));
-        createImages(imageObjects);
+      const payload = { ...input, id: user.id };
+      payload.daytime = payload.daytime.value;
+      payload.category = payload.category.value;
+      createEvent(payload).then(() => {
         router.push('/user/profile');
       });
     }
   };
 
-  const uploadImage = async (e) => {
+  const uploadImage = (e) => {
     if (e.target.files.length) {
-      const payload = new FormData();
-      payload.append('file', e.target.files[0]);
-      payload.append('upload_preset', 'nofzejna');
-      payload.append('cloud_name', 'twofiveclimb');
-      await uploadPhoto(payload).then((url) => {
-        setImgUrls((prevState) => (
-          [...prevState,
-            url,
-          ]
-        ));
+      const file = e.target.files[0];
+      uploadPhoto(file).then((data) => {
+        const imageObj = {
+          url: data.url,
+          publicId: data.public_id,
+        };
+        setInput((prevState) => ({
+          ...prevState,
+          photos: [...prevState.photos,
+            imageObj],
+        }));
       });
     }
   };
 
-  const removePhoto = (url) => {
-    setImgUrls((prevState) => {
-      const prevCopy = [...prevState];
-      const index = prevCopy.indexOf(url);
-      prevCopy.splice(index, 1);
+  const removePhoto = (image) => {
+    setInput((prevState) => {
+      const prevCopy = { ...prevState };
+      const index = prevCopy.photos.findIndex((imageObj) => imageObj.url === image.url);
+      prevCopy.photos.splice(index, 1);
       return prevCopy;
+    });
+    deletePhoto(image);
+  };
+
+  const handelCancel = () => {
+    const { photos } = input;
+    const cldDelete = photos.filter((photo) => !photo.id);
+    const deletePhotos = cldDelete.map((photo) => deletePhoto(photo));
+    Promise.all(deletePhotos).then(() => {
+      router.push('/user/profile');
     });
   };
 
@@ -193,7 +187,11 @@ function EventForm({ obj }) {
 
   useEffect(() => {
     if (obj.id) {
-      setInput(obj);
+      setInput({
+        ...obj,
+        daytime: { value: obj.daytime.id, label: obj.daytime.name },
+        category: { value: obj.category.id, label: obj.category.name },
+      });
     }
   }, [obj]);
 
@@ -220,6 +218,7 @@ function EventForm({ obj }) {
                 loadOptions={getDaytimes}
                 onChange={handleDaytime}
                 defaultOptions
+                value={input.daytime}
               />
             </div>
             <div>
@@ -229,6 +228,7 @@ function EventForm({ obj }) {
                 loadOptions={getCategories}
                 onChange={handleCategory}
                 defaultOptions
+                value={input.category}
               />
             </div>
           </div>
@@ -293,31 +293,27 @@ function EventForm({ obj }) {
           <Form.Control type="file" onChange={uploadImage} />
         </div>
         <div className="uploaded-Images-Div">
-          {imgUrls.map((url) => (
-            <div key={url} className="uploaded-Images-Container">
-              <Image className="event-Form-Photos" rounded src={url} />
-              <CloseButton onClick={() => removePhoto(url)} className="image-Delete" />
+          {input.photos?.map((photo) => (
+            <div key={photo.url} className="uploaded-Images-Container">
+              <Image className="event-Form-Photos" rounded src={photo.url} />
+              <CloseButton onClick={() => removePhoto(photo)} className="image-Delete" />
             </div>
           ))}
         </div>
         <div className="event-form-buttons">
           <Button className="submit-btn" type="submit" variant="success">{obj.id ? 'Update' : 'Submit'}</Button>
-          <Button className="cancel-btn" variant="danger" onClick={() => router.push('/user/profile')}>Cancel</Button>
+          <Button className="cancel-btn" variant="danger" onClick={handelCancel}>Cancel</Button>
         </div>
       </Form>
     </>
   );
 }
 
-// <Form.Label>Photos</Form.Label>
-// <input type="file" onChange={(e) => setImage(e.target.files[0])} />
-// <Button onClick={uploadImage}>Upload</Button>
-
 EventForm.propTypes = {
   obj: PropTypes.shape({
     title: PropTypes.string,
     date: PropTypes.string,
-    timeOfDay: PropTypes.string,
+    daytime: PropTypes.string,
     category: PropTypes.string,
     location: PropTypes.string,
     city: PropTypes.string,

@@ -11,6 +11,8 @@ const clientCredentials = {
   ...fbCredentials,
   databaseURL: process.env.NEXT_PUBLIC_DATABASE_URL,
   tomTomApi: process.env.NEXT_PUBLIC_TOM_TOM_API_KEY,
+  cloudinaryApiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  cloudinaryApiSecret: process.env.NEXT_PUBLIC_CLOUDINARY_API_SECRET,
 };
 
 if (!firebase.apps.length) {
