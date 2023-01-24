@@ -17,10 +17,8 @@ function UserPage() {
   const renderArray = content.sort((a, b) => b.createdDate - a.createdDate);
 
   const getTheContent = () => {
-    getUser(uid).then((userArray) => {
-      setPageUser(userArray[0]);
-      getPublicContentByUser(uid).then(setContent);
-    });
+    getUser(uid).then(setPageUser);
+    getPublicContentByUser(uid).then(setContent);
   };
 
   useEffect(() => {

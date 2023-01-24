@@ -27,8 +27,8 @@ const NavBar = () => {
   };
 
   const signOutUser = () => {
-    router.push('/');
     signOut();
+    router.push('/');
   };
 
   useEffect(() => {

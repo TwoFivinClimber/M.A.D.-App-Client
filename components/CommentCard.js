@@ -1,22 +1,20 @@
-import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from 'react';
 import {
   Card, Dropdown, DropdownButton, Image,
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { FaEllipsisV } from 'react-icons/fa';
 import Link from 'next/link';
-import { getUser } from '../api/user/userData';
 import { deleteComment, getComments } from '../api/comments/commentData';
 import { useAuth } from '../utils/context/authContext';
 
 function CommentCard({ obj, onUpdate, setCommentToUpdate }) {
   const { user } = useAuth();
-  const [commentUser, setCommentUser] = useState({});
 
   const deleteThisComment = () => {
     if (window.confirm('Delete this comment?')) {
-      getComments(obj.firebaseKey).then(() => {
-        deleteComment(obj.firebaseKey).then(() => onUpdate());
+      getComments(obj.id).then(() => {
+        deleteComment(obj.id).then(() => onUpdate());
       });
     }
   };
@@ -25,30 +23,24 @@ function CommentCard({ obj, onUpdate, setCommentToUpdate }) {
     window.scrollTo(1, 0);
   };
 
-  useEffect(() => {
-    getUser(obj.uid).then((userArr) => {
-      setCommentUser(userArr[0]);
-    });
-  }, [obj]);
-
   return (
     <Card className="comment-Card">
       <div className="comment-card-top">
         <div className="comment-card-user">
-          {commentUser.uid === user.uid ? (
+          {obj.uid.id === user.id ? (
             <Link href="/user/profile" passHref>
-              <Image className="comment-User-Image" src={commentUser.imageUrl} />
+              <Image className="comment-User-Image" src={obj.uid.image} />
             </Link>
           ) : (
-            <Link href={`/user/${commentUser.uid}`} passHref>
-              <Image className="comment-User-Image" src={commentUser.imageUrl} />
+            <Link href={`/user/${obj.uid.id}`} passHref>
+              <Image className="comment-User-Image" src={obj.uid.image} />
             </Link>
           )}
 
-          <Card.Text className="comment-card-username">{commentUser.userName}</Card.Text>
+          <Card.Text className="comment-card-username">{obj.uid.name}</Card.Text>
         </div>
-        <Card.Text className="comment-card-comment">{ obj.commentText }</Card.Text>
-        {user.uid === obj.uid ? (
+        <Card.Text className="comment-card-comment">{ obj.content }</Card.Text>
+        {user.id === obj.uid.id ? (
           <DropdownButton align="end" variant="secondary" className="comment-drop-down cardDropdown" title={<FaEllipsisV className="droptoggleicon" />}>
             <>
               <Dropdown.Item
@@ -71,9 +63,9 @@ function CommentCard({ obj, onUpdate, setCommentToUpdate }) {
 
 CommentCard.propTypes = {
   obj: PropTypes.shape({
-    firebaseKey: PropTypes.string,
-    eventId: PropTypes.string,
-    commentText: PropTypes.string,
+    id: PropTypes.number,
+    event: PropTypes.string,
+    content: PropTypes.string,
     date: PropTypes.string,
     uid: PropTypes.string,
   }).isRequired,

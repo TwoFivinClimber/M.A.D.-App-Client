@@ -23,10 +23,6 @@ function UserProfile() {
     getUser(user.id).then(setProfile);
   };
 
-  useEffect(() => {
-    getTheContent();
-  }, [router]);
-
   const deleteThisUser = () => {
     if (window.confirm('Be Careful! This will delete all of your posts.  Ae you sure ?')) {
       deleteUser(user.id, user.uid).then(signOut);
@@ -34,17 +30,21 @@ function UserProfile() {
     }
   };
 
+  useEffect(() => {
+    getTheContent();
+  }, [router, user]);
+
   return (
     <>
       <Card className="user-Profile-Card">
         <div className="user-Profile-Image">
-          <Image variant="start" className="user-profile-image" thumbnail src={user.image} />
+          <Image variant="start" className="user-profile-image" thumbnail src={profile.image} />
         </div>
         <div className="profile-Info-Div">
-          <Card.Title>{user.name}</Card.Title>
-          <Card.Text>{user.tag}</Card.Text>
-          <Card.Text>{user.location}</Card.Text>
-          <Card.Text>{user.age}</Card.Text>
+          <Card.Title>{profile.name}</Card.Title>
+          <Card.Text>{profile.tag}</Card.Text>
+          <Card.Text>{profile.location}</Card.Text>
+          <Card.Text>{profile.age}</Card.Text>
         </div>
         <div className="profile-Interest-Div">
           <h6>Interests</h6>

@@ -1,7 +1,5 @@
-import { getDaysbyUid, getPublicDays } from '../day/dayData';
-import {
-  getEventsByUid, getPublicEvents, updateEvent, getEventsByDay,
-} from './eventData';
+import { getPublicDays } from '../day/dayData';
+import { getPublicEvents, updateEvent, getEventsByDay } from './eventData';
 import { clientCredentials } from '../../utils/client';
 
 const dbUrl = clientCredentials.databaseURL;
@@ -42,13 +40,10 @@ const getEventCities = () => new Promise((resolve, reject) => {
 });
 
 const getPublicContentByUser = (uid) => new Promise((resolve, reject) => {
-  getEventsByUid(uid).then((eventsArr) => {
-    const publicEvents = eventsArr.filter((event) => event.isPublic);
-    getDaysbyUid(uid).then((daysArr) => {
-      const publicDays = daysArr.filter((day) => day.isPublic);
-      resolve([...publicEvents, ...publicDays]);
-    }).catch(reject);
-  });
+  fetch(`${dbUrl}/events?id=${uid}&public=True`)
+    .then((response) => response.json())
+    .then(resolve)
+    .catch(reject);
 });
 
 const getRandomPublicEvent = () => new Promise((resolve, reject) => {

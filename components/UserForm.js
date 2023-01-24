@@ -34,7 +34,7 @@ function UserForm({ obj }) {
       ...prevState,
       [name]: value,
     }));
-    console.warn(input);
+    console.warn(user);
   };
 
   const handleLocationSelect = (selected) => {
@@ -67,10 +67,14 @@ function UserForm({ obj }) {
     e.preventDefault();
     if (obj.id) {
       input.interests = input.interests.map((int) => int.value);
-      updateUser(input, obj.id).then(() => router.push('/user/profile'));
+      updateUser(input, obj.id).then(() => {
+        router.push('/user/profile');
+      });
     } else {
       input.interests = input.interests.map((int) => int.value);
-      createUser(input).then(() => router.push('/user/profile'));
+      createUser(input).then(() => {
+        router.push('/user/profile');
+      });
     }
   };
 
@@ -118,18 +122,18 @@ function UserForm({ obj }) {
     } else {
       setInput((prevState) => ({
         ...prevState,
-        uid: user.fbUser.uid,
-        name: user.fbUser.displayName,
-        image: user.fbUser.photoURL,
+        uid: user.fbUser?.uid,
+        name: user.fbUser?.displayName,
+        image: user.fbUser?.photoURL,
       }));
     }
-  }, [obj]);
+  }, [obj, user]);
 
   return (
     <>
       <h4 className="user-form-header">{obj.id ? 'Edit' : 'Create'} Your Profile</h4>
       <div className="user-form-image-div">
-        <Image variant="start" className="user-form-image" thumbnail roundedCircle src={input.image} />
+        <Image variant="start" className="user-form-image" thumbnail roundedCircle src={input?.image} />
         <div className="user-form-upload">
           <Form.Label>Upload Photo</Form.Label>
           <Form.Control type="file" onChange={uploadImage} />
@@ -139,7 +143,7 @@ function UserForm({ obj }) {
         <Form.Label>Profile Name</Form.Label>
         <Form.Control name="name" value={input.name} onChange={handleChange} type="text" placeholder="Enter Profile Name" required />
         <Form.Label>Tag Line</Form.Label>
-        <Form.Control name="tag" value={input.tag} onChange={handleChange} type="text" placeholder="Just Tryna Be Awesome" required />
+        <Form.Control name="tag" value={input.tag} onChange={handleChange} type="text" placeholder="What you into ?" required />
         <Form.Label>Location </Form.Label>
         <AsyncCreatable
           classNamePrefix="select"

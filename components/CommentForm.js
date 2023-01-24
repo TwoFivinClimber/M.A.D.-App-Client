@@ -2,21 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
-import Moment from 'moment';
 import { Button } from 'react-bootstrap';
 import { useAuth } from '../utils/context/authContext';
 import { updateComment, createComment } from '../api/comments/commentData';
-import { getSingleUserByUid } from '../api/user/userData';
 
 const initialState = {
-  commentText: '',
+  content: '',
 };
 
 // eslint-disable-next-line react/prop-types
-function CommentForm({ obj, firebaseKey, onUpdate }) {
+function CommentForm({ obj, id, onUpdate }) {
   const [input, setInput] = useState(initialState);
   const [comment, setComment] = useState();
-  const [commentUser, setCommentUser] = useState({});
   const { user } = useAuth();
 
   const handleChange = (e) => {
@@ -27,15 +24,9 @@ function CommentForm({ obj, firebaseKey, onUpdate }) {
     }));
   };
 
-  const date = () => {
-    const d = new Date();
-    const dateValue = Moment(d).format('MM-DD-YYYY');
-    return dateValue;
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (comment?.firebaseKey) {
+    if (comment?.id) {
       updateComment(input)
         .then(() => {
           setComment({});
@@ -44,8 +35,9 @@ function CommentForm({ obj, firebaseKey, onUpdate }) {
         });
     } else {
       const commentObj = {
-        ...input, uid: user.uid, date: date(), eventId: firebaseKey,
+        ...input, user: user.id, event: Number(id),
       };
+      console.warn(commentObj);
       createComment(commentObj).then(() => {
         setInput(initialState);
         onUpdate();
@@ -54,15 +46,14 @@ function CommentForm({ obj, firebaseKey, onUpdate }) {
   };
 
   useEffect(() => {
-    getSingleUserByUid(user.uid).then(setCommentUser);
-    if (obj.firebaseKey) {
+    if (obj.id) {
       setComment(obj);
       setInput(obj);
     } else {
       setComment({});
       setInput(initialState);
     }
-  }, [obj, user.uid]);
+  }, [obj, user.id]);
 
   return (
     <>
@@ -70,14 +61,14 @@ function CommentForm({ obj, firebaseKey, onUpdate }) {
 
         <Form className="comment-form" onSubmit={handleSubmit}>
           <div className="comment-form-image-div">
-            <img src={commentUser?.imageUrl} alt={commentUser?.userName} className="comment-form-user-image" />
+            <img src={user.image} alt={user?.name} className="comment-form-user-image" />
           </div>
           <Form.Control
             className="comment-form-input"
             as="textarea"
             placeholder="Add a comment..."
-            name="commentText"
-            value={input.commentText}
+            name="content"
+            value={input.content}
             onChange={handleChange}
             required
           />
@@ -95,7 +86,7 @@ function CommentForm({ obj, firebaseKey, onUpdate }) {
 
 CommentForm.propTypes = {
   obj: PropTypes.shape({
-    firebaseKey: PropTypes.string,
+    id: PropTypes.number,
   }),
   onUpdate: PropTypes.func.isRequired,
 };

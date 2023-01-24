@@ -3,25 +3,24 @@ import {
   Card, Image,
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-// import { useRouter } from 'next/router';
 
 function ProfileCard({ userObj }) {
   return (
     <Card className="user-Profile-Card">
       <div className="user-Profile-Image">
-        <Image variant="start" className="user-profile-image" thumbnail src={userObj?.imageUrl} />
+        <Image variant="start" className="user-profile-image" thumbnail src={userObj?.image} />
       </div>
       <div className="profile-Info-Div">
-        <Card.Title>{userObj.userName}</Card.Title>
-        <Card.Text>{userObj.tagLine}</Card.Text>
-        <Card.Text>{userObj.homeCity}</Card.Text>
+        <Card.Title>{userObj.name}</Card.Title>
+        <Card.Text>{userObj.tag}</Card.Text>
+        <Card.Text>{userObj.location}</Card.Text>
         <Card.Text>{userObj.age}</Card.Text>
       </div>
       <div className="profile-Interest-Div">
         <h6>Interests</h6>
-        <Card.Text>{userObj.interestOne}</Card.Text>
-        <Card.Text>{userObj.interestTwo}</Card.Text>
-        <Card.Text>{userObj.interestThree}</Card.Text>
+        {userObj.interests.map((interest) => (
+          <Card.Text>{interest.category.name}</Card.Text>
+        ))}
       </div>
     </Card>
   );
@@ -29,15 +28,21 @@ function ProfileCard({ userObj }) {
 
 ProfileCard.propTypes = {
   userObj: PropTypes.shape({
-    userName: PropTypes.string,
-    imageUrl: PropTypes.string,
-    tagLine: PropTypes.string,
+    name: PropTypes.string,
+    image: PropTypes.string,
+    tag: PropTypes.string,
     age: PropTypes.string,
-    homeCity: PropTypes.string,
-    interestOne: PropTypes.string,
-    interestTwo: PropTypes.string,
-    interestThree: PropTypes.string,
-    firebaseKey: PropTypes.string,
+    location: PropTypes.string,
+    interests: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number,
+        category: PropTypes.shape({
+          id: PropTypes.number,
+          name: PropTypes.string,
+        }),
+      }),
+    ),
+    id: PropTypes.number,
   }).isRequired,
 };
 

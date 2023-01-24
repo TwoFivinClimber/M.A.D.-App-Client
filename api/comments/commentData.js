@@ -4,17 +4,21 @@ import { clientCredentials } from '../../utils/client';
 const dbUrl = clientCredentials.databaseURL;
 
 const createComment = (commentObj) => new Promise((resolve, reject) => {
-  axios.post(`${dbUrl}/comments.json`, commentObj)
-    .then((response) => {
-      const payload = { firebaseKey: response.data.name };
-      axios.patch(`${dbUrl}/comments/${response.data.name}.json`, payload)
-        .then((patchResponse) => resolve(patchResponse.data));
-    }).catch(reject);
+  fetch(`${dbUrl}/comments`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(commentObj),
+  })
+    .then(resolve)
+    .catch(reject);
 });
 
-const getComments = (firebaseKey) => new Promise((resolve, reject) => {
-  axios.get(`${dbUrl}/comments.json?orderBy="eventId"&equalTo="${firebaseKey}"`)
-    .then((response) => resolve(Object.values(response.data)))
+const getComments = (id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/comments?event=${id}`)
+    .then((response) => response.json())
+    .then(resolve)
     .catch(reject);
 });
 
@@ -25,19 +29,23 @@ const getSingleComment = (firebaseKey) => new Promise((resolve, reject) => {
 });
 
 const updateComment = (commentObj) => new Promise((resolve, reject) => {
-  axios.patch(`${dbUrl}/comments/${commentObj.firebaseKey}.json`, commentObj)
-    .then(() => {
-      getComments(commentObj.videoFirebaseKey).then(resolve);
-    })
+  fetch(`${dbUrl}/comments/${commentObj.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-type': 'application/json',
+    },
+    body: JSON.stringify(commentObj),
+  })
+    .then(resolve)
     .catch(reject);
 });
 
-const deleteComment = (commentfirebaseKey) => new Promise((resolve, reject) => {
-  axios.delete(`${dbUrl}/comments/${commentfirebaseKey}.json`)
-    .then(() => {
-      getComments().then((commentsArray) => resolve(commentsArray));
-    })
-    .catch((error) => reject(error));
+const deleteComment = (id) => new Promise((resolve, reject) => {
+  fetch(`${dbUrl}/comments/${id}`, {
+    method: 'DELETE',
+  })
+    .then(resolve)
+    .catch(reject);
 });
 
 export {

@@ -7,22 +7,15 @@ import {
 } from 'react-bootstrap';
 import { Rating } from 'react-simple-star-rating';
 import { FaEllipsisV } from 'react-icons/fa';
-// import ImageList from '@mui/material/ImageList';
-// import ImageListItem from '@mui/material/ImageListItem';
-// import { getSingleEvent } from '../../api/events/eventData';
-// import { getImagesByEvent } from '../../api/images/imageData';
 import Moment from 'moment';
-import { deleteEvent, getEventPackage } from '../../api/events/mergedEvents';
 import { useAuth } from '../../utils/context/authContext';
 import CommentForm from '../../components/CommentForm';
 import { getComments } from '../../api/comments/commentData';
 import CommentCard from '../../components/CommentCard';
-// import { getSingleUserByUid } from '../../api/user/userData';
+import { getSingleEvent, deleteEvent } from '../../api/events/eventData';
 
 function ViewEvent() {
   const [event, setEvent] = useState({});
-  const [images, setImages] = useState([]);
-  const [eventUser, setEventUser] = useState({});
   const [comments, setComments] = useState([]);
   const [commentToUpdate, setCommentToUpdate] = useState({});
   const router = useRouter();
@@ -30,11 +23,7 @@ function ViewEvent() {
   const { firebaseKey } = router.query;
 
   const getTheContent = () => {
-    getEventPackage(firebaseKey).then((eventObj) => {
-      setEvent(eventObj);
-      setImages(eventObj.images);
-      setEventUser(eventObj.eventUser);
-    });
+    getSingleEvent(firebaseKey).then(setEvent);
     getComments(firebaseKey).then(setComments);
   };
 
@@ -44,7 +33,7 @@ function ViewEvent() {
 
   const deleteThisEvent = () => {
     if (window.confirm('Are You Sure ?')) {
-      deleteEvent(event.firebaseKey).then(() => {
+      deleteEvent(event.id).then(() => {
         router.push('/user/profile');
       });
     }
@@ -55,23 +44,23 @@ function ViewEvent() {
       <Card.Body>
         <div className="view-day-head">
           <div className="view-day-user">
-            <Card.Img className="round-User-Img" src={eventUser?.imageUrl} />
-            <Card.Text className="view-day-username">{eventUser?.userName}</Card.Text>
+            <Card.Img className="round-User-Img" src={event.uid?.image} />
+            <Card.Text className="view-day-username">{event.uid?.name}</Card.Text>
           </div>
           <div className="view-day-dropdown">
             <DropdownButton align="end" variant="secondary" className="card-Dropdown" title={<FaEllipsisV />}>
-              {user.uid === event.uid ? (
+              {user.id === event.uid?.id ? (
                 <><Dropdown.Item className="drop-Down-Item" onClick={() => router.push(`/event/edit/${event.firebaseKey}`)}>Edit</Dropdown.Item><><Dropdown.Divider /><Dropdown.Item className="drop-Down-Item" onClick={deleteThisEvent}>Delete This Day</Dropdown.Item></></>
               ) : ('')}
             </DropdownButton>
           </div>
         </div>
         <Carousel fade className="event-page-carousel">
-          {images?.map((image) => (
-            <Carousel.Item key={image.firebasekey}>
+          {event.photos?.map((image) => (
+            <Carousel.Item key={image.id}>
               <img
                 className="event-page-images d-block"
-                src={image.imageUrl}
+                src={image.url}
                 alt="First slide"
               />
             </Carousel.Item>
@@ -87,7 +76,7 @@ function ViewEvent() {
               allowHover={false}
               showTooltip
               allowHalfIcon
-              ratingValue={event.starRating}
+              ratingValue={event.rating}
               readonly
               size={26}
               tooltipArray={['Bad', 'Bad', 'Not Bad', 'Not Bad', 'Good', 'Good', 'Great', 'Great', 'Awesome', 'M.A.D. Awesome']}
@@ -102,7 +91,7 @@ function ViewEvent() {
         </div>
       </Card.Body>
       <div className="comments-Div">
-        <CommentForm obj={commentToUpdate} firebaseKey={firebaseKey} onUpdate={getTheContent} />
+        <CommentForm obj={commentToUpdate} id={firebaseKey} onUpdate={getTheContent} />
         {comments?.map((comment) => (
           <CommentCard key={comment.firebaseKey} obj={comment} onUpdate={getTheContent} setCommentToUpdate={setCommentToUpdate} />
         ))}
