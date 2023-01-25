@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { getSingleEvent } from '../../../api/events/eventData';
@@ -15,7 +16,7 @@ function EditEvent() {
 
   useEffect(() => {
     getTheContent();
-  }, [firebaseKey]);
+  }, [firebaseKey, router]);
 
   return (
     <EventForm obj={event} onUpdate={getTheContent} />
