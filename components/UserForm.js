@@ -9,7 +9,7 @@ import { getCategories } from '../api/categories';
 import { useAuth } from '../utils/context/authContext';
 import { createUser, updateUser } from '../api/user/userData';
 import { getCity } from '../api/tom-tom';
-import uploadPhoto from '../api/cloudinary';
+import { uploadPhoto } from '../api/cloudinary';
 
 const initialState = {
   uid: '',
@@ -34,7 +34,6 @@ function UserForm({ obj }) {
       ...prevState,
       [name]: value,
     }));
-    console.warn(user);
   };
 
   const handleLocationSelect = (selected) => {
@@ -86,16 +85,13 @@ function UserForm({ obj }) {
   });
 
   // IMAGE UPLOAD //
-  const uploadImage = async (e) => {
-    const payload = new FormData();
-    payload.append('file', e.target.files[0]);
-    payload.append('upload_preset', 'nofzejna');
-    payload.append('cloud_name', 'twofiveclimb');
-    await uploadPhoto(payload).then((url) => {
+  const uploadImage = (e) => {
+    const file = e.target.files[0];
+    uploadPhoto(file).then((data) => {
       setInput((prevState) => (
         {
           ...prevState,
-          image: url,
+          image: data.url,
         }
       ));
     });

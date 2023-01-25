@@ -38,13 +38,13 @@ function UserProfile() {
     <>
       <Card className="user-Profile-Card">
         <div className="user-Profile-Image">
-          <Image variant="start" className="user-profile-image" thumbnail src={profile.image} />
+          <Image variant="start" className="user-profile-image" thumbnail src={profile?.image} />
         </div>
         <div className="profile-Info-Div">
-          <Card.Title>{profile.name}</Card.Title>
-          <Card.Text>{profile.tag}</Card.Text>
-          <Card.Text>{profile.location}</Card.Text>
-          <Card.Text>{profile.age}</Card.Text>
+          <Card.Title>{profile?.name}</Card.Title>
+          <Card.Text>{profile?.tag}</Card.Text>
+          <Card.Text>{profile?.location}</Card.Text>
+          <Card.Text>{profile?.age}</Card.Text>
         </div>
         <div className="profile-Interest-Div">
           <h6>Interests</h6>
