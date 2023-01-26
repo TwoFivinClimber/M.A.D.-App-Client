@@ -7,7 +7,7 @@ import AsyncCreatable from 'react-select/async-creatable';
 import AsyncSelect from 'react-select/async';
 import { getCategories } from '../api/categories';
 import { useAuth } from '../utils/context/authContext';
-import { createUser, updateUser } from '../api/user/userData';
+import { checkUser, createUser, updateUser } from '../api/user/userData';
 import { getCity } from '../api/tom-tom';
 import { uploadPhoto } from '../api/cloudinary';
 
@@ -25,7 +25,7 @@ const initialState = {
 
 function UserForm({ obj }) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [input, setInput] = useState(initialState);
 
   const handleChange = (e) => {
@@ -72,6 +72,13 @@ function UserForm({ obj }) {
     } else {
       input.interests = input.interests.map((int) => int.value);
       createUser(input).then(() => {
+        checkUser(user.fbUser.uid).then((dbUser) => {
+          const { fbUser } = user;
+          setUser({
+            ...dbUser,
+            fbUser,
+          });
+        });
         router.push('/user/profile');
       });
     }
