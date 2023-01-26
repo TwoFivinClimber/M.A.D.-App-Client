@@ -26,7 +26,6 @@ const AuthProvider = (props) => {
     firebase.auth().onAuthStateChanged((fbUser) => {
       if (fbUser) {
         checkUser(fbUser.uid).then((databaseUser) => {
-          console.warn(fbUser);
           setUser({
             ...databaseUser,
             fbUser,
@@ -41,6 +40,7 @@ const AuthProvider = (props) => {
   const value = useMemo( // https://reactjs.org/docs/hooks-reference.html#usememo
     () => ({
       user,
+      setUser,
       userLoading: user === null,
       // as long as user === null, will be true
       // As soon as the user value !== null, value will be false
